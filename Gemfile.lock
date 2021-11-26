@@ -65,6 +65,8 @@ GEM
     minitest (5.14.4)
     nokogiri (1.12.5-arm64-darwin)
       racc (~> 1.4)
+    nokogiri (1.12.5-x86_64-linux)
+      racc (~> 1.4)
     parallel (1.21.0)
     parser (3.0.3.0)
       ast (~> 2.4.1)
@@ -78,7 +80,7 @@ GEM
     rails-html-sanitizer (1.4.2)
       loofah (~> 2.3)
     rainbow (3.0.0)
-    rake (10.5.0)
+    rake (12.3.3)
     redis (4.5.1)
     regexp_parser (2.1.1)
     rexml (3.2.5)
@@ -130,12 +132,13 @@ GEM
 
 PLATFORMS
   arm64-darwin-20
+  x86_64-linux
 
 DEPENDENCIES
   ajax-datatables-rails-helper!
   bundler (~> 2.0)
   fatherly_advice!
-  rake (~> 10.0)
+  rake (~> 12.3)
   rspec (~> 3.0)
   rspec-json_expectations
   rubocop
