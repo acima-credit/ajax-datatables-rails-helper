@@ -42,8 +42,8 @@ module AjaxDatatablesRails
         JsColumnBuilder.build self
       end
 
-      def to_js_search
-        JsColumnSearchBuilder.build self
+      def to_js_search(params)
+        JsColumnSearchBuilder.build self, params
       end
 
       def inspect

@@ -10,6 +10,7 @@ module AjaxDatatablesRails
 
       module ClassMethods
         def set_model(model)
+          model = model.to_s if model.is_a?(Symbol)
           model = model.classify.constantize if model.is_a?(String)
           @model = model
         end
@@ -49,13 +50,15 @@ module AjaxDatatablesRails
           columns.values.map(&:to_js_column)
         end
 
-        def js_searches
+        def js_searches(params)
           # columns.values.map { |v| JsColumnSearchBuilder.build(v) }
-          columns.values.map(&:to_js_search)
+          columns.values.map do |column|
+            column.to_js_search params
+          end
         end
 
         def dom_id
-          name.underscore.dasherize.gsub('/', '-')
+          name.underscore.dasherize.tr('/', '-')
         end
 
         def build_record_entry(instance)
@@ -67,11 +70,20 @@ module AjaxDatatablesRails
         end
       end
 
+      def initialize(params, options = {})
+        super
+      end
+
       delegate :model,
-               :columns, :view_columns,
-               :js_columns, :js_searches,
+               :columns,
+               :view_columns,
+               :js_columns,
                :build_record_entry,
                to: :class
+
+      def js_searches
+        self.class.js_searches params
+      end
 
       def get_raw_records
         model.unscoped

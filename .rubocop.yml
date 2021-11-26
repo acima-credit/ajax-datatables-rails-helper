@@ -1,0 +1,142 @@
+require: rubocop-performance
+
+AllCops:
+  DisplayCopNames: true
+  Exclude:
+    - bin/*
+  TargetRubyVersion: 2.7
+  NewCops: enable
+
+Metrics/BlockNesting:
+  Max: 2
+
+Metrics/ClassLength:
+  CountComments: false
+  Max: 125
+
+Metrics/PerceivedComplexity:
+  Max: 8
+
+Metrics/CyclomaticComplexity:
+  Max: 8
+
+Layout/LineLength:
+  AllowURI: true
+  Max: 165
+  Exclude:
+    - db/**/*.rb
+    - Gemfile*
+
+Metrics/MethodLength:
+  CountComments: false
+  Max: 25
+  Exclude:
+    - db/**/*.rb
+    - spec/**/*.rb
+
+Metrics/BlockLength:
+  Exclude:
+    - Gemfile
+    - "*.gemspec"
+    - spec/**/*_spec.rb
+
+Metrics/ModuleLength:
+  CountComments: false
+  Max: 120
+  Exclude:
+    - db/**/*.rb
+    - spec/**/*.rb
+
+Metrics/ParameterLists:
+  Max: 5
+  CountKeywordArgs: true
+
+Metrics/AbcSize:
+  Enabled: false
+
+Style/CollectionMethods:
+  PreferredMethods:
+    collect:  'map'
+    reduce:   'inject'
+    find:     'detect'
+    find_all: 'select'
+
+Style/Documentation:
+  Enabled: false
+
+Layout/DotPosition:
+  EnforcedStyle: trailing
+
+Style/DoubleNegation:
+  Enabled: false
+
+Style/EachWithObject:
+  Enabled: false
+
+Style/Encoding:
+  Enabled: false
+
+Style/EmptyCaseCondition:
+  Enabled: false
+
+Style/HashSyntax:
+  EnforcedStyle: ruby19
+
+Style/Lambda:
+  Enabled: false
+
+Layout/SpaceAroundOperators:
+  AllowForAlignment: true
+
+Layout/SpaceInsideHashLiteralBraces:
+  EnforcedStyle: space
+
+Style/StringLiterals:
+  EnforcedStyle: single_quotes
+
+Style/TrivialAccessors:
+  Enabled: false
+
+Layout/HashAlignment:
+  EnforcedColonStyle: key
+
+Style/SignalException:
+  Enabled: false
+
+Naming/AccessorMethodName:
+  Enabled: false
+  
+Naming/MemoizedInstanceVariableName:
+  Exclude:
+    - app/actions/**/*.rb
+
+Naming/MethodParameterName:
+  AllowedNames:
+    - _
+    - _e
+    - e
+    - k
+    - v
+    - to
+    - tx
+
+Lint/AmbiguousBlockAssociation:
+  Enabled: false
+
+Lint/ScriptPermission:
+  Exclude:
+  - check/**/*.rb
+
+Style/FormatStringToken:
+  Enabled: false
+
+Style/MultilineBlockChain:
+  Enabled: false
+
+Security/YAMLLoad:
+  Enabled: true
+  Exclude:
+    - spec/**/*.rb
+
+Naming/FileName:
+  Enabled: false
