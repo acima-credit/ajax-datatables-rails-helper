@@ -81,13 +81,13 @@ RSpec.describe EmployeeDatatable, type: :datatable do
     describe '#js_searches' do
       let(:expected) do
         [
-          { title: 'ID', type: 'text' },
-          { title: 'Username', type: 'text' },
-          { title: 'Name', type: 'text' },
-          { title: 'Status', type: 'select', values: statuses },
-          { title: 'Age', type: 'text' },
-          { title: 'Hired', type: 'none' },
-          { title: 'Created', type: 'none' }
+          { field: 'id', title: 'ID', type: 'text' },
+          { field: 'username', title: 'Username', type: 'text' },
+          { field: 'full_name', title: 'Name', type: 'text' },
+          { field: 'status', title: 'Status', type: 'select', values: statuses },
+          { field: 'age', title: 'Age', type: 'text' },
+          { field: 'hired_at', title: 'Hired', type: 'none' },
+          { field: 'created_at', title: 'Created', type: 'none' }
         ]
       end
 
@@ -97,13 +97,13 @@ RSpec.describe EmployeeDatatable, type: :datatable do
         let(:params) { { username: 'emp3', status: 'active', unknown: 'some.value' } }
         let(:expected) do
           [
-            { title: 'ID', type: 'text' },
-            { title: 'Username', type: 'text', value: 'emp3' },
-            { title: 'Name', type: 'text' },
-            { title: 'Status', type: 'select', value: 'active', values: statuses },
-            { title: 'Age', type: 'text' },
-            { title: 'Hired', type: 'none' },
-            { title: 'Created', type: 'none' }
+            { field: 'id', title: 'ID', type: 'text' },
+            { field: 'username', title: 'Username', type: 'text', value: 'emp3' },
+            { field: 'full_name', title: 'Name', type: 'text' },
+            { field: 'status', title: 'Status', type: 'select', value: 'active', values: statuses },
+            { field: 'age', title: 'Age', type: 'text' },
+            { field: 'hired_at', title: 'Hired', type: 'none' },
+            { field: 'created_at', title: 'Created', type: 'none' }
           ]
         end
 
@@ -140,6 +140,10 @@ RSpec.describe EmployeeDatatable, type: :datatable do
       end
 
       it('result') { expect(subject.build_record_entry(row)).to eq exp_result }
+    end
+
+    describe '#dom_id' do
+      it('result') { expect(subject.dom_id).to eq 'employee-datatable' }
     end
   end
 end

@@ -14,7 +14,7 @@ module AjaxDatatablesRails
         @params = params
       end
 
-      FIELDS = [:title].freeze
+      FIELDS = %i[field title].freeze
 
       def build
         @column.to_hash(FIELDS).tap do |options|

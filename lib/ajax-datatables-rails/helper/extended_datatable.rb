@@ -78,6 +78,7 @@ module AjaxDatatablesRails
                :columns,
                :view_columns,
                :js_columns,
+               :dom_id,
                :build_record_entry,
                to: :class
 
