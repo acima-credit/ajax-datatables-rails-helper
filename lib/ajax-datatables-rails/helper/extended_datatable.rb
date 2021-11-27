@@ -37,7 +37,11 @@ module AjaxDatatablesRails
         end
 
         def column(name, *args, **custom_options)
-          columns[name.to_sym] = Column.new(name, model, *args, **custom_options)
+          key = name.to_sym
+          return if columns.key?(key)
+
+          custom_options[:index] = columns.size
+          columns[key] = Column.new(name, model, *args, **custom_options)
         end
 
         def view_columns

@@ -3,7 +3,7 @@
 module AjaxDatatablesRails
   module Helper
     class Column
-      KNOWN_FIELDS = %i[field title source orderable searchable search display].freeze
+      KNOWN_FIELDS = %i[field title source orderable searchable search display index].freeze
 
       attr_accessor(*KNOWN_FIELDS)
 

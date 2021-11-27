@@ -25,19 +25,19 @@ RSpec.describe EmployeeDatatable, type: :datatable do
       let(:values) { subject.columns.transform_values(&:to_hash) }
       let(:expected) do
         {
-          id: { field: 'id', title: 'ID', source: "#{model.name}.id",
+          id: { index: 0, field: 'id', title: 'ID', source: "#{model.name}.id",
                 orderable: true, searchable: true, search: { cond: :eq }, display: nil },
-          username: { field: 'username', title: 'Username', source: "#{model.name}.username",
+          username: { index: 1, field: 'username', title: 'Username', source: "#{model.name}.username",
                       orderable: true, searchable: true, search: { cond: :like }, display: nil },
-          full_name: { field: 'full_name', title: 'Name', source: "#{model.name}.full_name",
+          full_name: { index: 2, field: 'full_name', title: 'Name', source: "#{model.name}.full_name",
                        orderable: true, searchable: true, search: { cond: :like }, display: nil },
-          status: { field: 'status', title: 'Status', source: "#{model.name}.status",
+          status: { index: 3, field: 'status', title: 'Status', source: "#{model.name}.status",
                     orderable: true, searchable: true, search: { values: statuses, cond: :string_eq }, display: { align: :center } },
-          age: { field: 'age', title: 'Age', source: "#{model.name}.age",
+          age: { index: 4, field: 'age', title: 'Age', source: "#{model.name}.age",
                  orderable: true, searchable: true, search: { cond: :eq }, display: nil },
-          hired_at: { field: 'hired_at', title: 'Hired', source: "#{model.name}.hired_at",
+          hired_at: { index: 5, field: 'hired_at', title: 'Hired', source: "#{model.name}.hired_at",
                       orderable: true, searchable: false, search: nil, display: nil },
-          created_at: { field: 'created_at', title: 'Created', source: "#{model.name}.created_at",
+          created_at: { index: 6, field: 'created_at', title: 'Created', source: "#{model.name}.created_at",
                         orderable: true, searchable: false, search: nil, display: nil }
         }
       end
@@ -81,13 +81,13 @@ RSpec.describe EmployeeDatatable, type: :datatable do
     describe '#js_searches' do
       let(:expected) do
         [
-          { field: 'id', title: 'ID', type: 'text' },
-          { field: 'username', title: 'Username', type: 'text' },
-          { field: 'full_name', title: 'Name', type: 'text' },
-          { field: 'status', title: 'Status', type: 'select', values: statuses },
-          { field: 'age', title: 'Age', type: 'text' },
-          { field: 'hired_at', title: 'Hired', type: 'none' },
-          { field: 'created_at', title: 'Created', type: 'none' }
+          { index: 0, field: 'id', title: 'ID', type: 'text' },
+          { index: 1, field: 'username', title: 'Username', type: 'text' },
+          { index: 2, field: 'full_name', title: 'Name', type: 'text' },
+          { index: 3, field: 'status', title: 'Status', type: 'select', values: statuses },
+          { index: 4, field: 'age', title: 'Age', type: 'text' },
+          { index: 5, field: 'hired_at', title: 'Hired', type: 'none' },
+          { index: 6, field: 'created_at', title: 'Created', type: 'none' }
         ]
       end
 
@@ -97,13 +97,13 @@ RSpec.describe EmployeeDatatable, type: :datatable do
         let(:params) { { username: 'emp3', status: 'active', unknown: 'some.value' } }
         let(:expected) do
           [
-            { field: 'id', title: 'ID', type: 'text' },
-            { field: 'username', title: 'Username', type: 'text', value: 'emp3' },
-            { field: 'full_name', title: 'Name', type: 'text' },
-            { field: 'status', title: 'Status', type: 'select', value: 'active', values: statuses },
-            { field: 'age', title: 'Age', type: 'text' },
-            { field: 'hired_at', title: 'Hired', type: 'none' },
-            { field: 'created_at', title: 'Created', type: 'none' }
+            { index: 0, field: 'id', title: 'ID', type: 'text' },
+            { index: 1, field: 'username', title: 'Username', type: 'text', value: 'emp3' },
+            { index: 2, field: 'full_name', title: 'Name', type: 'text' },
+            { index: 3, field: 'status', title: 'Status', type: 'select', value: 'active', values: statuses },
+            { index: 4, field: 'age', title: 'Age', type: 'text' },
+            { index: 5, field: 'hired_at', title: 'Hired', type: 'none' },
+            { index: 6, field: 'created_at', title: 'Created', type: 'none' }
           ]
         end
 
