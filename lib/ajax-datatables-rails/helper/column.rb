@@ -3,9 +3,11 @@
 module AjaxDatatablesRails
   module Helper
     class Column
-      KNOWN_FIELDS = %i[field title source orderable searchable search display index].freeze
+      def self.known_fields
+        @known_fields ||= %i[field title source orderable searchable search display index].freeze
+      end
 
-      attr_accessor(*KNOWN_FIELDS)
+      attr_accessor(*known_fields)
 
       def initialize(name, model, *args, **custom_options)
         update_defaults name
@@ -14,8 +16,10 @@ module AjaxDatatablesRails
         update_search
       end
 
+      delegate :known_fields, to: :class
+
       def get(name)
-        raise "unknown field [#{name}]" unless KNOWN_FIELDS.include?(name.to_sym)
+        raise "unknown field [#{name}]" unless @known_fields.include?(name.to_sym)
 
         instance_variable_get "@#{name}"
       end
@@ -23,14 +27,14 @@ module AjaxDatatablesRails
       alias [] get
 
       def set(name, value)
-        raise "unknown field [#{name}]" unless KNOWN_FIELDS.include?(name.to_sym)
+        raise "unknown field [#{name}]" unless known_fields.include?(name.to_sym)
 
         instance_variable_set "@#{name}", value
       end
 
       alias []= set
 
-      def to_hash(fields = KNOWN_FIELDS)
+      def to_hash(fields = known_fields)
         fields.index_with { |k| send k }
       end
 
@@ -44,6 +48,10 @@ module AjaxDatatablesRails
 
       def to_js_search(params)
         JsColumnSearchBuilder.build self, params
+      end
+
+      def data?
+        true
       end
 
       def inspect
@@ -64,7 +72,7 @@ module AjaxDatatablesRails
 
       def update_basics(name, model, args)
         self.title ||= name.to_s.gsub(/_at$/, '').humanize
-        self.source ||= format '%s.%s', model.name, field
+        self.source ||= format '%s.%s', model.name, field if model
         self.orderable = true if args.include?(:orderable)
       end
 
@@ -84,6 +92,33 @@ module AjaxDatatablesRails
         when String
           search[:cond] ||= :string_eq
         end
+      end
+    end
+
+    class ActionColumn < Column
+      def self.known_fields
+        @known_fields ||= super.dup.push(:links).freeze
+      end
+
+      def self.build
+        new :actions, nil
+      end
+
+      attr_reader :links
+
+      def initialize(name, model, *args, **custom_options)
+        super
+
+        @field = nil
+        @links = {}
+      end
+
+      def add_link(name, options = {})
+        @links[name.to_sym] = options
+      end
+
+      def data?
+        false
       end
     end
   end

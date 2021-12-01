@@ -44,6 +44,21 @@ module AjaxDatatablesRails
           columns[key] = Column.new(name, model, *args, **custom_options)
         end
 
+        def action_link(name, **options)
+          add_action_column
+          action_column.add_link name, options
+        end
+
+        def action_column
+          columns[:actions]
+        end
+
+        def add_action_column
+          return if action_column
+
+          columns[:actions] = ActionColumn.build.tap { |x| x.index = columns.size }
+        end
+
         def view_columns
           # columns.transform_values { |options| ViewColumnBuilder.build(options) }
           columns.transform_values(&:to_view_column)
@@ -69,7 +84,8 @@ module AjaxDatatablesRails
           return decorator.new(instance).to_hash if decorator.present?
 
           columns.
-            transform_values { |v| instance.send(v.field) }.
+            select { |_k, v| v.data? }.
+            transform_values { |v| instance.respond_to?(v.field) ? instance.send(v.field) : nil }.
             update(DT_RowId: instance.id)
         end
       end
@@ -92,6 +108,10 @@ module AjaxDatatablesRails
 
       def get_raw_records
         model.unscoped
+      end
+
+      def additional_data
+        {}
       end
 
       def data
