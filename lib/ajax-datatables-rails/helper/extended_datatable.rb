@@ -60,17 +60,14 @@ module AjaxDatatablesRails
         end
 
         def view_columns
-          # columns.transform_values { |options| ViewColumnBuilder.build(options) }
           columns.transform_values(&:to_view_column)
         end
 
         def js_columns
-          # columns.map { |k, v| JsColumnBuilder.build(k, v, view_columns[k]) }
           columns.values.map(&:to_js_column)
         end
 
         def js_searches(params)
-          # columns.values.map { |v| JsColumnSearchBuilder.build(v) }
           columns.values.map do |column|
             column.to_js_search params
           end
