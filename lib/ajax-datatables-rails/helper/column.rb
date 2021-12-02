@@ -117,6 +117,10 @@ module AjaxDatatablesRails
         @links[name.to_sym] = options
       end
 
+      def links_ary
+        @links.each_with_object([]) { |(k, v), ary| ary.push v.update(name: k) }
+      end
+
       def data?
         false
       end

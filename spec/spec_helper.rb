@@ -87,6 +87,10 @@ module DatatablesHelpers
 
   let(:subject) { described_class.new conv_params, options }
 
+  def js(value)
+    AjaxDatatablesRails::Helper::JsValue.new value
+  end
+
   def create(model, opts = {})
     model = model.to_s.classify.constantize if model.is_a?(Symbol)
     model.create opts

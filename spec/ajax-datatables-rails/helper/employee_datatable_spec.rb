@@ -13,7 +13,7 @@ class EmployeeDatatable < AjaxDatatablesRails::ActiveRecord
   column 'status', :orderable, title: 'Status', search: { values: model::STATUS.values }, display: { align: :center }
   column 'age', :orderable, title: 'Age', search: { cond: :eq }
   column 'hired_at', :orderable
-  column 'created_at', :orderable
+  column 'created_at', :orderable, display: { render: 'DTUtils.displayTimestamp' }
 
   action_link :addresses,
               title: 'Addresses',
@@ -42,14 +42,15 @@ RSpec.describe EmployeeDatatable, type: :datatable do
           hired_at: { index: 5, field: 'hired_at', title: 'Hired', source: "#{model.name}.hired_at",
                       orderable: true, searchable: false, search: nil, display: nil },
           created_at: { index: 6, field: 'created_at', title: 'Created', source: "#{model.name}.created_at",
-                        orderable: true, searchable: false, search: nil, display: nil },
+                        orderable: true, searchable: false, search: nil,
+                        display: { render: 'DTUtils.displayTimestamp' } },
           actions: { index: 7, field: nil, title: 'Actions', source: nil,
                      orderable: false, searchable: false, search: nil, display: nil,
                      links: { addresses: { title: 'Addresses', url: '/admin/employee/addressed/:id' } } }
         }
       end
 
-      it('types') { expect(column_types).to eq ['AjaxDatatablesRails::Helper::ActionColumn', 'AjaxDatatablesRails::Helper::Column'] }
+      it('types') { expect(column_types).to eq %w[AjaxDatatablesRails::Helper::ActionColumn AjaxDatatablesRails::Helper::Column] }
       it('definition') { expect(values).to eq expected }
     end
 
@@ -79,12 +80,70 @@ RSpec.describe EmployeeDatatable, type: :datatable do
           { title: 'Status', orderable: true, searchable: true, data: 'status', className: 'text-center' },
           { title: 'Age', orderable: true, searchable: true, data: 'age' },
           { title: 'Hired', orderable: true, searchable: false, data: 'hired_at' },
-          { title: 'Created', orderable: true, searchable: false, data: 'created_at' },
+          { title: 'Created', orderable: true, searchable: false, data: 'created_at', render: js('DTUtils.displayTimestamp') },
           { title: 'Actions', orderable: false, searchable: false, data: nil }
         ]
       end
 
-      it('definition') { expect(subject.js_columns).to eq expected }
+      let(:expected_json) do
+        <<~JAVASCRIPT.chomp
+          [
+            {
+              "title": "ID",
+              "orderable": true,
+              "searchable": true,
+              "data": "id"
+            },
+            {
+              "title": "Username",
+              "orderable": true,
+              "searchable": true,
+              "data": "username"
+            },
+            {
+              "title": "Name",
+              "orderable": true,
+              "searchable": true,
+              "data": "full_name"
+            },
+            {
+              "title": "Status",
+              "orderable": true,
+              "searchable": true,
+              "data": "status",
+              "className": "text-center"
+            },
+            {
+              "title": "Age",
+              "orderable": true,
+              "searchable": true,
+              "data": "age"
+            },
+            {
+              "title": "Hired",
+              "orderable": true,
+              "searchable": false,
+              "data": "hired_at"
+            },
+            {
+              "title": "Created",
+              "orderable": true,
+              "searchable": false,
+              "data": "created_at",
+              "render": DTUtils.displayTimestamp
+            },
+            {
+              "title": "Actions",
+              "orderable": false,
+              "searchable": false,
+              "data": null
+            }
+          ]
+        JAVASCRIPT
+      end
+
+      it('definition') { expect(subject.js_columns.inspect).to eq expected.inspect }
+      it('json') { expect(JSON.pretty_generate(subject.js_columns)).to eq expected_json }
     end
 
     describe '#js_searches' do
