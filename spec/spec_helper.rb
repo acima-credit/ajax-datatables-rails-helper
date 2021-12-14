@@ -33,6 +33,7 @@ ActiveRecord::Schema.define do
     table.column :status, :string
     table.column :age, :integer
     table.column :hired_at, :datetime
+    table.column :comment, :string
     table.timestamps
   end
   create_table :employee_addresses do |table|
@@ -91,15 +92,29 @@ module DatatablesHelpers
     AjaxDatatablesRails::Helper::JsValue.new value
   end
 
-  def create(model, opts = {})
-    model = model.to_s.classify.constantize if model.is_a?(Symbol)
-    model.create opts
+  def model_field_names
+    {
+      employee: %i[username full_name status age hired_at created_at company comment],
+      company: %i[name]
+    }
   end
 
-  def create_many(model, qty, opts = {})
+  def create(model, *args, **opts)
+    fields = {}
+    args.each_with_index do |v, idx|
+      k = model_field_names[model][idx]
+      fields[k] = v
+    end
+    fields.update(opts)
+
+    model = model.to_s.classify.constantize if model.is_a?(Symbol)
+    model.create fields
+  end
+
+  def create_many(model, qty, *args, **opts)
     1.upto(qty).map do |x|
       opts.update yield(x) if block_given?
-      create(model, opts)
+      create model, *args, **opts
     end
   end
 
@@ -110,14 +125,14 @@ module DatatablesHelpers
   let(:date1) { Time.new 2020, 1, 1, 10, 15 }
   let(:date2) { Time.new 2020, 3, 15, 11, 15 }
 
-  let!(:cmp1) { create :company, name: 'First Company' }
-  let!(:cmp2) { create :company, name: 'Second Company' }
+  let!(:cmp1) { create :company, 'First Company' }
+  let!(:cmp2) { create :company, 'Second Company' }
 
-  let!(:emp1) { create :employee, username: 'emp1', full_name: 'Employee Uno', status: 'active', age: 25, hired_at: date1, created_at: date1, company: cmp1 }
-  let!(:emp2) { create :employee, username: 'emp2', full_name: 'Employee Dos', status: 'inactive', age: 19, hired_at: date1, created_at: date1, company: cmp2 }
-  let!(:emp3) { create :employee, username: 'emp3', full_name: 'Employee Tres', status: 'active', age: 32, hired_at: date2, created_at: date2, company: cmp1 }
-  let!(:emp4) { create :employee, username: 'emp4', full_name: 'Employee Cuatro', status: 'inactive', age: 23, hired_at: date2, created_at: date2, company: cmp2 }
-  let!(:emp5) { create :employee, username: 'emp5', full_name: 'Employee Cinco', status: 'active', age: 45, hired_at: date2, created_at: date2, company: cmp1 }
+  let!(:emp1) { create :employee, 'emp1', 'Employee Uno', 'active', 25, date1, date1, cmp1, 'emp01' }
+  let!(:emp2) { create :employee, 'emp2', 'Employee Dos', 'inactive', 19, date1, date1, cmp2, 'emp02' }
+  let!(:emp3) { create :employee, 'emp3', 'Employee Tres', 'active', 32, date2, date2, cmp1, 'emp03' }
+  let!(:emp4) { create :employee, 'emp4', 'Employee Cuatro', 'inactive', 23, date2, date2, cmp2, 'emp04' }
+  let!(:emp5) { create :employee, 'emp5', 'Employee Cinco', 'active', 45, date2, date2, cmp1, 'emp05' }
 
   let(:first_employees) { [emp1, emp2] }
   let(:second_employees) { [emp3, emp4, emp5] }

@@ -14,6 +14,7 @@ class EmployeeDatatable < AjaxDatatablesRails::ActiveRecord
   column 'age', :orderable, title: 'Age', search: { cond: :eq }
   column 'hired_at', :orderable
   column 'created_at', :orderable, display: { render: 'DTUtils.displayTimestamp' }
+  column 'comment', display: :none
 
   action_link :addresses,
               title: 'Addresses',
@@ -44,6 +45,8 @@ RSpec.describe EmployeeDatatable, type: :datatable do
           created_at: { index: 6, field: 'created_at', title: 'Created', source: "#{model.name}.created_at",
                         orderable: true, searchable: false, search: nil,
                         display: { render: 'DTUtils.displayTimestamp' } },
+          comment: { index: nil, field: 'comment', title: 'Comment', source: "#{model.name}.comment",
+                     orderable: false, searchable: false, search: nil, display: :none },
           actions: { index: 7, field: nil, title: 'Actions', source: nil,
                      orderable: false, searchable: false, search: nil, display: nil,
                      links: { addresses: { title: 'Addresses', url: '/admin/employee/addressed/:id' } } }
@@ -64,6 +67,7 @@ RSpec.describe EmployeeDatatable, type: :datatable do
           age: { source: "#{model.name}.age", title: 'Age', orderable: true, searchable: true, cond: :eq },
           hired_at: { source: "#{model.name}.hired_at", title: 'Hired', orderable: true, searchable: false },
           created_at: { source: "#{model.name}.created_at", title: 'Created', orderable: true, searchable: false },
+          comment: { source: "#{model.name}.comment", title: 'Comment', orderable: false, searchable: false },
           actions: { orderable: false, searchable: false, source: nil, title: 'Actions' }
         }
       end
@@ -205,6 +209,7 @@ RSpec.describe EmployeeDatatable, type: :datatable do
           age: 25,
           hired_at: date1,
           created_at: row.created_at,
+          comment: row.comment,
           DT_RowId: row.id
         }
       end

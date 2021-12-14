@@ -54,6 +54,10 @@ module AjaxDatatablesRails
         true
       end
 
+      def display?
+        display != :none
+      end
+
       def inspect
         format '#<%s %s>',
                self.class.name,
@@ -123,6 +127,10 @@ module AjaxDatatablesRails
 
       def data?
         false
+      end
+
+      def display?
+        true
       end
     end
   end
