@@ -4,7 +4,7 @@ module AjaxDatatablesRails
   module Helper
     class Column
       def self.known_fields
-        @known_fields ||= %i[field title source orderable searchable search display index].freeze
+        @known_fields ||= %i[field title source orderable searchable search display].freeze
       end
 
       attr_accessor(*known_fields)

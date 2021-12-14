@@ -36,17 +36,11 @@ module AjaxDatatablesRails
           @columns ||= {}
         end
 
-        def next_column_index
-          columns.values.count(&:display?)
-        end
-
         def column(name, *args, **custom_options)
           key = name.to_sym
           return if columns.key?(key)
 
-          column = Column.new(name, model, *args, **custom_options)
-          column.index = next_column_index if column.display?
-          columns[key] = column
+          columns[key] = Column.new(name, model, *args, **custom_options)
         end
 
         def action_link(name, **options)
@@ -61,7 +55,7 @@ module AjaxDatatablesRails
         def add_action_column
           return if action_column
 
-          columns[:actions] = ActionColumn.build.tap { |x| x.index = next_column_index }
+          columns[:actions] = ActionColumn.build
         end
 
         def view_columns
