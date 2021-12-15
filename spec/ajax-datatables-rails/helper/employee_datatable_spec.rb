@@ -16,6 +16,7 @@ class EmployeeDatatable < AjaxDatatablesRails::ActiveRecord
   column 'created_at', :orderable, display: { render: 'DTUtils.displayTimestamp' }
   column 'comment', display: :none
   rel_column 'company', :name, title: 'Company'
+  rel_column 'company', :category, title: 'Category', display: :none
 
   action_link :addresses,
               title: 'Addresses',
@@ -54,6 +55,8 @@ RSpec.describe EmployeeDatatable, type: :datatable do
                      orderable: false, searchable: false, search: nil, display: :none },
           'company.name': { field: 'company.name', title: 'Company', source: 'Company.name', relation: 'company',
                             orderable: false, searchable: false, search: nil, display: nil },
+          'company.category': { field: 'company.category', title: 'Category', source: 'Company.category', relation: 'company',
+                                orderable: false, searchable: false, search: nil, display: :none },
           actions: { field: nil, title: 'Actions', source: nil,
                      orderable: false, searchable: false, search: nil, display: nil,
                      links: { addresses: { title: 'Addresses', url: '/admin/employee/addressed/:id' } } }
@@ -82,6 +85,7 @@ RSpec.describe EmployeeDatatable, type: :datatable do
           created_at: { source: "#{model.name}.created_at", title: 'Created', orderable: true, searchable: false },
           comment: { source: "#{model.name}.comment", title: 'Comment', orderable: false, searchable: false },
           'company.name': { source: 'Company.name', title: 'Company', orderable: false, searchable: false },
+          'company.category': { source: 'Company.category', title: 'Category', orderable: false, searchable: false },
           actions: { orderable: false, searchable: false, source: nil, title: 'Actions' }
         }
       end
@@ -236,7 +240,8 @@ RSpec.describe EmployeeDatatable, type: :datatable do
           hired_at: date1,
           created_at: row.created_at,
           comment: row.comment,
-          company_name: emp1.company.name,
+          company_name: cmp1.name,
+          company_category: cmp1.category,
           DT_RowId: row.id
         }
       end
