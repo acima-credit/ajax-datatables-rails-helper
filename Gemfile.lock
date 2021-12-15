@@ -13,7 +13,7 @@ GIT
 PATH
   remote: .
   specs:
-    ajax-datatables-rails-helper (0.1.6)
+    ajax-datatables-rails-helper (0.1.7)
       actionpack
       activerecord
       activesupport
