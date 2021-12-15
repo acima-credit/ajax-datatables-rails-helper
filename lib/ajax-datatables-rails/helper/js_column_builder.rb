@@ -39,7 +39,7 @@ module AjaxDatatablesRails
 
       def build
         @column.to_hash(FIELDS).tap do |options|
-          options[:data] = @column.field
+          options[:data] = @column.field&.tr('.', '_')
           build_display options
         end
       end

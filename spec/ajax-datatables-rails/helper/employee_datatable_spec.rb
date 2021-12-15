@@ -15,10 +15,15 @@ class EmployeeDatatable < AjaxDatatablesRails::ActiveRecord
   column 'hired_at', :orderable
   column 'created_at', :orderable, display: { render: 'DTUtils.displayTimestamp' }
   column 'comment', display: :none
+  rel_column 'company', :name, title: 'Company'
 
   action_link :addresses,
               title: 'Addresses',
               url: '/admin/employee/addressed/:id'
+
+  # def get_raw_records
+  #   model.unscoped.joins(:company).references(:company).distinct
+  # end
 end
 
 RSpec.describe EmployeeDatatable, type: :datatable do
@@ -47,13 +52,21 @@ RSpec.describe EmployeeDatatable, type: :datatable do
                         display: { render: 'DTUtils.displayTimestamp' } },
           comment: { field: 'comment', title: 'Comment', source: "#{model.name}.comment",
                      orderable: false, searchable: false, search: nil, display: :none },
+          'company.name': { field: 'company.name', title: 'Company', source: 'Company.name', relation: 'company',
+                            orderable: false, searchable: false, search: nil, display: nil },
           actions: { field: nil, title: 'Actions', source: nil,
                      orderable: false, searchable: false, search: nil, display: nil,
                      links: { addresses: { title: 'Addresses', url: '/admin/employee/addressed/:id' } } }
         }
       end
 
-      it('types') { expect(column_types).to eq %w[AjaxDatatablesRails::Helper::ActionColumn AjaxDatatablesRails::Helper::Column] }
+      it('types') do
+        expect(column_types).to eq %w[
+          AjaxDatatablesRails::Helper::ActionColumn
+          AjaxDatatablesRails::Helper::Column
+          AjaxDatatablesRails::Helper::RelatedColumn
+        ]
+      end
       it('definition') { expect(values).to eq expected }
     end
 
@@ -68,6 +81,7 @@ RSpec.describe EmployeeDatatable, type: :datatable do
           hired_at: { source: "#{model.name}.hired_at", title: 'Hired', orderable: true, searchable: false },
           created_at: { source: "#{model.name}.created_at", title: 'Created', orderable: true, searchable: false },
           comment: { source: "#{model.name}.comment", title: 'Comment', orderable: false, searchable: false },
+          'company.name': { source: 'Company.name', title: 'Company', orderable: false, searchable: false },
           actions: { orderable: false, searchable: false, source: nil, title: 'Actions' }
         }
       end
@@ -85,6 +99,7 @@ RSpec.describe EmployeeDatatable, type: :datatable do
           { title: 'Age', orderable: true, searchable: true, data: 'age' },
           { title: 'Hired', orderable: true, searchable: false, data: 'hired_at' },
           { title: 'Created', orderable: true, searchable: false, data: 'created_at', render: js('DTUtils.displayTimestamp') },
+          { title: 'Company', orderable: false, searchable: false, data: 'company_name' },
           { title: 'Actions', orderable: false, searchable: false, data: nil }
         ]
       end
@@ -137,6 +152,12 @@ RSpec.describe EmployeeDatatable, type: :datatable do
               "render": DTUtils.displayTimestamp
             },
             {
+              "title": "Company",
+              "orderable": false,
+              "searchable": false,
+              "data": "company_name"
+            },
+            {
               "title": "Actions",
               "orderable": false,
               "searchable": false,
@@ -160,6 +181,7 @@ RSpec.describe EmployeeDatatable, type: :datatable do
           { field: 'age', title: 'Age', type: 'text' },
           { field: 'hired_at', title: 'Hired', type: 'none' },
           { field: 'created_at', title: 'Created', type: 'none' },
+          { field: 'company_name', title: 'Company', type: 'none' },
           { field: nil, title: 'Actions', type: 'none' }
         ]
       end
@@ -177,6 +199,7 @@ RSpec.describe EmployeeDatatable, type: :datatable do
             { field: 'age', title: 'Age', type: 'text' },
             { field: 'hired_at', title: 'Hired', type: 'none' },
             { field: 'created_at', title: 'Created', type: 'none' },
+            { field: 'company_name', title: 'Company', type: 'none' },
             { field: nil, title: 'Actions', type: 'none' }
           ]
         end
@@ -186,8 +209,11 @@ RSpec.describe EmployeeDatatable, type: :datatable do
     end
 
     describe '#get_raw_records' do
+      let(:sql_query) do
+        'SELECT DISTINCT "employees".* FROM "employees" INNER JOIN "companies" ON "companies"."id" = "employees"."company_id"'
+      end
+      it('to_sql') { expect(subject.get_raw_records.to_sql).to eq sql_query }
       it('definition') { expect(subject.get_raw_records).to be_a ActiveRecord::Relation }
-      it('to_sql') { expect(subject.get_raw_records.to_sql).to eq 'SELECT "employees".* FROM "employees"' }
     end
 
     describe '#data' do
@@ -210,6 +236,7 @@ RSpec.describe EmployeeDatatable, type: :datatable do
           hired_at: date1,
           created_at: row.created_at,
           comment: row.comment,
+          company_name: emp1.company.name,
           DT_RowId: row.id
         }
       end

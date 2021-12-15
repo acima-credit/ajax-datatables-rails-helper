@@ -14,10 +14,11 @@ module AjaxDatatablesRails
         @params = params
       end
 
-      FIELDS = %i[field title].freeze
+      FIELDS = %i[title].freeze
 
       def build
         @column.to_hash(FIELDS).tap do |options|
+          options[:field] = @column.field&.gsub('.', '_')
           build_search_options options
           build_search_value options
         end

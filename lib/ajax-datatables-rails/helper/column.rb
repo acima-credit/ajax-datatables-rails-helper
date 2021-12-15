@@ -19,7 +19,7 @@ module AjaxDatatablesRails
       delegate :known_fields, to: :class
 
       def get(name)
-        raise "unknown field [#{name}]" unless @known_fields.include?(name.to_sym)
+        raise "unknown field [#{name}]" unless known_fields.include?(name.to_sym)
 
         instance_variable_get "@#{name}"
       end
@@ -58,6 +58,10 @@ module AjaxDatatablesRails
         display != :none
       end
 
+      def related?
+        false
+      end
+
       def inspect
         format '#<%s %s>',
                self.class.name,
@@ -69,7 +73,7 @@ module AjaxDatatablesRails
       private
 
       def update_defaults(name)
-        self.field = name
+        self.field ||= name
         self.searchable = false
         self.orderable = false
       end
@@ -131,6 +135,67 @@ module AjaxDatatablesRails
 
       def display?
         true
+      end
+    end
+
+    class RelatedColumn < Column
+      def self.known_fields
+        @known_fields ||= super.dup.push(:relation).freeze
+      end
+
+      attr_reader :base_model, :relation, :relation_key, :join_type, :joins, :includes, :references, :selects
+
+      def initialize(name, base_model, relation, *args, **custom_options)
+        super
+
+        @base_model = base_model
+        @relation = relation
+        @relation_key = @relation.is_a?(String) ? @relation.to_sym : @relation
+        @model = get_model_from base_model, relation
+        @field = format '%s.%s', relation, name
+        @source = format '%s.%s', @model, name
+        add_association_queries args, custom_options
+      end
+
+      def update_model_query(datatable)
+        %i[joins includes references selects].each do |type|
+          send(type).each { |x| datatable.add_model_query type, x }
+        end
+      end
+
+      def related?
+        true
+      end
+
+      private
+
+      def get_model_from(base_model, relation)
+        current_model = base_model
+        relation.to_s.split('.').each do |rel|
+          found_model = current_model.reflect_on_association(rel)&.klass
+          raise "could not find model for relation [#{rel}]" unless found_model
+
+          current_model = found_model
+        end
+        current_model
+      end
+
+      def add_association_queries(args, custom_options)
+        @join_type = get_join_type args, custom_options
+        @joins = @join_type == :joins ? [relation_key] : []
+        @includes = @join_type == :includes ? [relation_key] : []
+        @references = custom_options[:references] || [relation_key]
+        @selects = custom_options[:selects] || []
+      end
+
+      def get_join_type(args, opts)
+        return opts[:type] if opts.key?(:type)
+
+        if args.include?(:includes)
+          :includes
+        else
+          :joins
+        end
       end
     end
   end

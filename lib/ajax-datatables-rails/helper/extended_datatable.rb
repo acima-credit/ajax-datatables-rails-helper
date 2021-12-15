@@ -15,11 +15,21 @@ module AjaxDatatablesRails
           @model = model
         end
 
-        def set_decorator(decorator)
-          @decorator = decorator
+        def model_query
+          @model_query ||= { joins: [], includes: [], references: [], selects: [] }
         end
 
-        attr_reader :decorator
+        def add_model_query(type, entry)
+          sub_query = model_query[type]
+          return if sub_query.include? entry
+
+          sub_query << entry
+        end
+
+        def decorator(value = :none)
+          @decorator = value unless value == :none
+          @decorator || RowDecorator
+        end
 
         def default_model
           @default_model = name.gsub(/DataTable$/, '').constantize unless instance_variable_defined?(:@default_model)
@@ -40,7 +50,17 @@ module AjaxDatatablesRails
           key = name.to_sym
           return if columns.key?(key)
 
-          columns[key] = Column.new(name, model, *args, **custom_options)
+          sel_model = custom_options.delete(:model) || model
+          columns[key] = Column.new(name, sel_model, *args, **custom_options)
+        end
+
+        def rel_column(relation, name, *args, **custom_options)
+          key = format('%s.%s', relation, name).to_sym
+          return if columns.key?(key)
+
+          columns[key] = RelatedColumn.new(name, model, relation, *args, **custom_options).tap do |column|
+            column.update_model_query self
+          end
         end
 
         def action_link(name, **options)
@@ -74,13 +94,16 @@ module AjaxDatatablesRails
           name.underscore.dasherize.tr('/', '-')
         end
 
-        def build_record_entry(instance)
-          return decorator.new(instance).to_hash if decorator.present?
+        def build_decorator
+          return if @built_decorator
 
-          columns.
-            select { |_k, v| v.data? }.
-            transform_values { |v| instance.respond_to?(v.field) ? instance.send(v.field) : nil }.
-            update(DT_RowId: instance.id)
+          decorator.columns(columns) if decorator.respond_to?(:columns)
+          @built_decorator = true
+        end
+
+        def build_record_entry(instance)
+          build_decorator
+          decorator.new(instance).to_hash
         end
       end
 
@@ -94,6 +117,7 @@ module AjaxDatatablesRails
                :js_columns,
                :dom_id,
                :build_record_entry,
+               :model_query,
                to: :class
 
       def js_searches
@@ -101,7 +125,13 @@ module AjaxDatatablesRails
       end
 
       def get_raw_records
-        model.unscoped
+        scope = model.unscoped
+        %i[joins includes references].each do |type|
+          model_query[type].each { |value| scope = scope.send type, value }
+        end
+        values = model_query[:selects].flatten.join(', ')
+        scope = scope.select values unless values.blank?
+        scope.distinct
       end
 
       def additional_data
