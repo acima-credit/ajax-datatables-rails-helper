@@ -134,9 +134,10 @@ module DatatablesHelpers
   let!(:emp3) { create :employee, 'emp3', 'Employee Tres', 'active', 32, date2, date2, cmp1, 'emp03' }
   let!(:emp4) { create :employee, 'emp4', 'Employee Cuatro', 'inactive', 23, date2, date2, cmp2, 'emp04' }
   let!(:emp5) { create :employee, 'emp5', 'Employee Cinco', 'active', 45, date2, date2, cmp1, 'emp05' }
+  let!(:emp6) { create :employee, 'emp6', 'Employee Seis', 'active', 85, date2, date2, cmp1, 'emp06' }
 
   let(:first_employees) { [emp1, emp2] }
-  let(:second_employees) { [emp3, emp4, emp5] }
+  let(:second_employees) { [emp3, emp4, emp5, emp6] }
   let(:all_employees) { first_employees + second_employees }
 end
 

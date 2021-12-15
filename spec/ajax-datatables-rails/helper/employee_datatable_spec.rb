@@ -22,8 +22,12 @@ class EmployeeDatatable < AjaxDatatablesRails::ActiveRecord
               title: 'Addresses',
               url: '/admin/employee/addressed/:id'
 
+  def base_scope
+    super.where('age < ?', 80)
+  end
+
   # def get_raw_records
-  #   model.unscoped.joins(:company).references(:company).distinct
+  #   base_scope.joins(:company).references(:company).distinct
   # end
 end
 
@@ -214,7 +218,12 @@ RSpec.describe EmployeeDatatable, type: :datatable do
 
     describe '#get_raw_records' do
       let(:sql_query) do
-        'SELECT DISTINCT "employees".* FROM "employees" INNER JOIN "companies" ON "companies"."id" = "employees"."company_id"'
+        <<~SQL.split("\n").join(' ')
+          SELECT DISTINCT "employees".*
+          FROM "employees"
+          INNER JOIN "companies" ON "companies"."id" = "employees"."company_id"
+          WHERE (age < 80)
+        SQL
       end
       it('to_sql') { expect(subject.get_raw_records.to_sql).to eq sql_query }
       it('definition') { expect(subject.get_raw_records).to be_a ActiveRecord::Relation }

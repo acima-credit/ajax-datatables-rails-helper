@@ -124,8 +124,12 @@ module AjaxDatatablesRails
         self.class.js_searches params
       end
 
+      def base_scope
+        model.unscoped
+      end
+
       def get_raw_records
-        scope = model.unscoped
+        scope = base_scope
         %i[joins includes references].each do |type|
           model_query[type].each { |value| scope = scope.send type, value }
         end
