@@ -55,7 +55,7 @@ module AjaxDatatablesRails
         end
 
         def rel_column(relation, name, *args, **custom_options)
-          key = format('%s.%s', relation, name).to_sym
+          key = format('%s.%s', relation, name).tr('.', '_').to_sym
           return if columns.key?(key)
 
           columns[key] = RelatedColumn.new(name, model, relation, *args, **custom_options).tap do |column|

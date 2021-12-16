@@ -57,10 +57,10 @@ RSpec.describe EmployeeDatatable, type: :datatable do
                         display: { render: 'DTUtils.displayTimestamp' } },
           comment: { field: 'comment', title: 'Comment', source: "#{model.name}.comment",
                      orderable: false, searchable: false, search: nil, display: :none },
-          'company.name': { field: 'company.name', title: 'Company', source: 'Company.name', relation: 'company',
-                            orderable: false, searchable: false, search: nil, display: nil },
-          'company.category': { field: 'company.category', title: 'Category', source: 'Company.category', relation: 'company',
-                                orderable: false, searchable: false, search: nil, display: :none },
+          company_name: { field: 'company.name', title: 'Company', source: 'Company.name', relation: 'company',
+                          orderable: false, searchable: false, search: nil, display: nil },
+          company_category: { field: 'company.category', title: 'Category', source: 'Company.category', relation: 'company',
+                              orderable: false, searchable: false, search: nil, display: :none },
           actions: { field: nil, title: 'Actions', source: nil,
                      orderable: false, searchable: false, search: nil, display: nil,
                      links: { addresses: { title: 'Addresses', url: '/admin/employee/addressed/:id' } } }
@@ -88,8 +88,8 @@ RSpec.describe EmployeeDatatable, type: :datatable do
           hired_at: { source: "#{model.name}.hired_at", title: 'Hired', orderable: true, searchable: false },
           created_at: { source: "#{model.name}.created_at", title: 'Created', orderable: true, searchable: false },
           comment: { source: "#{model.name}.comment", title: 'Comment', orderable: false, searchable: false },
-          'company.name': { source: 'Company.name', title: 'Company', orderable: false, searchable: false },
-          'company.category': { source: 'Company.category', title: 'Category', orderable: false, searchable: false },
+          company_name: { source: 'Company.name', title: 'Company', orderable: false, searchable: false },
+          company_category: { source: 'Company.category', title: 'Category', orderable: false, searchable: false },
           actions: { orderable: false, searchable: false, source: nil, title: 'Actions' }
         }
       end
