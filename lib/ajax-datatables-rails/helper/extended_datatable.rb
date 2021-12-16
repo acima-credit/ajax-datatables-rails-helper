@@ -28,12 +28,13 @@ module AjaxDatatablesRails
 
         def decorator(value = :none)
           @decorator = value unless value == :none
-          @decorator || RowDecorator
+          @decorator ||= Class.new(::AjaxDatatablesRails::Helper::RowDecorator).tap do |x|
+            x.columns columns
+          end
         end
 
         def default_model
-          @default_model = name.gsub(/DataTable$/, '').constantize unless instance_variable_defined?(:@default_model)
-          @default_model
+          @default_model ||= name.gsub(/DataTable$/, '').constantize
         rescue NameError
           @default_model = nil
         end
@@ -94,15 +95,7 @@ module AjaxDatatablesRails
           name.underscore.dasherize.tr('/', '-')
         end
 
-        def build_decorator
-          return if @built_decorator
-
-          decorator.columns(columns) if decorator.respond_to?(:columns)
-          @built_decorator = true
-        end
-
         def build_record_entry(instance)
-          build_decorator
           decorator.new(instance).to_hash
         end
       end
