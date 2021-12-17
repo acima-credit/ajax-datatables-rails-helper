@@ -13,7 +13,7 @@ class EmployeeDatatable < AjaxDatatablesRails::ActiveRecord
   column 'status', :orderable, title: 'Status', search: { values: model::STATUS.values }, display: { align: :center }
   column 'age', :orderable, title: 'Age', search: { cond: :eq }
   column 'hired_at', :orderable
-  column 'created_at', :orderable, display: { render: 'DTUtils.displayTimestamp' }
+  column 'created_at', :orderable, search: { cond: :date_range, delimiter: '|' }, display: { render: 'DTUtils.displayTimestamp' }
   column 'comment', display: :none
   rel_column 'company', :name, title: 'Company'
   rel_column 'company', :category, title: 'Category', display: :none
@@ -25,10 +25,6 @@ class EmployeeDatatable < AjaxDatatablesRails::ActiveRecord
   def base_scope
     super.where('age < ?', 80)
   end
-
-  # def get_raw_records
-  #   base_scope.joins(:company).references(:company).distinct
-  # end
 end
 
 RSpec.describe EmployeeDatatable, type: :datatable do
@@ -53,7 +49,7 @@ RSpec.describe EmployeeDatatable, type: :datatable do
           hired_at: { field: 'hired_at', title: 'Hired', source: "#{model.name}.hired_at",
                       orderable: true, searchable: false, search: nil, display: nil },
           created_at: { field: 'created_at', title: 'Created', source: "#{model.name}.created_at",
-                        orderable: true, searchable: false, search: nil,
+                        orderable: true, searchable: true, search: { cond: :date_range, delimiter: '|' },
                         display: { render: 'DTUtils.displayTimestamp' } },
           comment: { field: 'comment', title: 'Comment', source: "#{model.name}.comment",
                      orderable: false, searchable: false, search: nil, display: :none },
@@ -86,7 +82,7 @@ RSpec.describe EmployeeDatatable, type: :datatable do
           status: { source: "#{model.name}.status", title: 'Status', orderable: true, searchable: true, cond: :string_eq },
           age: { source: "#{model.name}.age", title: 'Age', orderable: true, searchable: true, cond: :eq },
           hired_at: { source: "#{model.name}.hired_at", title: 'Hired', orderable: true, searchable: false },
-          created_at: { source: "#{model.name}.created_at", title: 'Created', orderable: true, searchable: false },
+          created_at: { source: "#{model.name}.created_at", title: 'Created', orderable: true, searchable: true, cond: :date_range, delimiter: '|' },
           comment: { source: "#{model.name}.comment", title: 'Comment', orderable: false, searchable: false },
           company_name: { source: 'Company.name', title: 'Company', orderable: false, searchable: false },
           company_category: { source: 'Company.category', title: 'Category', orderable: false, searchable: false },
@@ -106,7 +102,7 @@ RSpec.describe EmployeeDatatable, type: :datatable do
           { title: 'Status', orderable: true, searchable: true, data: 'status', className: 'text-center' },
           { title: 'Age', orderable: true, searchable: true, data: 'age' },
           { title: 'Hired', orderable: true, searchable: false, data: 'hired_at' },
-          { title: 'Created', orderable: true, searchable: false, data: 'created_at', render: js('DTUtils.displayTimestamp') },
+          { title: 'Created', orderable: true, searchable: true, data: 'created_at', render: js('DTUtils.displayTimestamp') },
           { title: 'Company', orderable: false, searchable: false, data: 'company_name' },
           { title: 'Actions', orderable: false, searchable: false, data: nil }
         ]
@@ -155,7 +151,7 @@ RSpec.describe EmployeeDatatable, type: :datatable do
             {
               "title": "Created",
               "orderable": true,
-              "searchable": false,
+              "searchable": true,
               "data": "created_at",
               "render": DTUtils.displayTimestamp
             },
@@ -188,7 +184,7 @@ RSpec.describe EmployeeDatatable, type: :datatable do
           { field: 'status', title: 'Status', type: 'select', values: statuses },
           { field: 'age', title: 'Age', type: 'text' },
           { field: 'hired_at', title: 'Hired', type: 'none' },
-          { field: 'created_at', title: 'Created', type: 'none' },
+          { field: 'created_at', title: 'Created', type: 'date_range', delimiter: '|' },
           { field: 'company_name', title: 'Company', type: 'none' },
           { field: nil, title: 'Actions', type: 'none' }
         ]
@@ -206,7 +202,7 @@ RSpec.describe EmployeeDatatable, type: :datatable do
             { field: 'status', title: 'Status', type: 'select', value: 'active', values: statuses },
             { field: 'age', title: 'Age', type: 'text' },
             { field: 'hired_at', title: 'Hired', type: 'none' },
-            { field: 'created_at', title: 'Created', type: 'none' },
+            { field: 'created_at', title: 'Created', type: 'date_range', delimiter: '|' },
             { field: 'company_name', title: 'Company', type: 'none' },
             { field: nil, title: 'Actions', type: 'none' }
           ]
@@ -227,6 +223,80 @@ RSpec.describe EmployeeDatatable, type: :datatable do
       end
       it('to_sql') { expect(subject.get_raw_records.to_sql).to eq sql_query }
       it('definition') { expect(subject.get_raw_records).to be_a ActiveRecord::Relation }
+
+      context 'with ordering' do
+        let(:params) do
+          {
+            'draw' => '12',
+            'columns' => {
+              '0' => { 'data' => 'id', 'name' => '', 'searchable' => 'true', 'orderable' => 'true', 'search' => { 'value' => '', 'regex' => 'false' } },
+              '1' => { 'data' => 'username', 'name' => '', 'searchable' => 'true', 'orderable' => 'true', 'search' => { 'value' => '', 'regex' => 'false' } },
+              '2' => { 'data' => 'fullname', 'name' => '', 'searchable' => 'true', 'orderable' => 'true', 'search' => { 'value' => '', 'regex' => 'false' } },
+              '3' => { 'data' => 'age', 'name' => '', 'searchable' => 'true', 'orderable' => 'true', 'search' => { 'value' => '', 'regex' => 'false' } },
+              '4' => { 'data' => 'hired_at', 'name' => '', 'searchable' => 'false', 'orderable' => 'true', 'search' => { 'value' => '', 'regex' => 'false' } },
+              '5' => { 'data' => 'created_at', 'name' => '', 'searchable' => 'true', 'orderable' => 'true', 'search' => { 'value' => '', 'regex' => 'false' } },
+              '6' => { 'data' => 'company', 'name' => '', 'searchable' => 'false', 'orderable' => 'false', 'search' => { 'value' => '', 'regex' => 'false' } },
+              '7' => { 'data' => 'actions', 'name' => '', 'searchable' => 'false', 'orderable' => 'false', 'search' => { 'value' => '', 'regex' => 'false' } }
+            },
+            'order' => { '0' => { 'column' => '2', 'dir' => 'desc' } },
+            'start' => '0',
+            'length' => '3',
+            'search' => { 'value' => '', 'regex' => 'false' },
+            '_' => Time.current.to_i.to_s
+          }
+        end
+
+        let(:sql_query) do
+          <<~SQL.split("\n").join(' ')
+            SELECT DISTINCT "employees".*
+            FROM "employees"
+            INNER JOIN "companies" ON "companies"."id" = "employees"."company_id"
+            WHERE (age < 80)
+            ORDER BY "emmployees.full_name"#{' '}
+            LIMIT
+          SQL
+        end
+        it('to_sql') { expect(subject.get_raw_records.to_sql).to eq sql_query }
+        it('definition') { expect(subject.get_raw_records).to be_a ActiveRecord::Relation }
+      end
+
+      context 'with ordering', :focus do
+        let(:params) do
+          {
+            'draw' => '12',
+            'columns' => {
+              '0' => { 'data' => 'id', 'name' => '', 'searchable' => 'true', 'orderable' => 'true', 'search' => { 'value' => '', 'regex' => 'false' } },
+              '1' => { 'data' => 'username', 'name' => '', 'searchable' => 'true', 'orderable' => 'true', 'search' => { 'value' => '', 'regex' => 'false' } },
+              '2' => { 'data' => 'fullname', 'name' => '', 'searchable' => 'true', 'orderable' => 'true', 'search' => { 'value' => '', 'regex' => 'false' } },
+              '3' => { 'data' => 'age', 'name' => '', 'searchable' => 'true', 'orderable' => 'true', 'search' => { 'value' => '', 'regex' => 'false' } },
+              '4' => { 'data' => 'hired_at', 'name' => '', 'searchable' => 'false', 'orderable' => 'true', 'search' => { 'value' => '', 'regex' => 'false' } },
+              '5' => { 'data' => 'created_at', 'name' => '', 'searchable' => 'true', 'orderable' => 'true',
+                       'search' => { 'value' => '2021-09-01|2021-09-05', 'regex' => 'false' } },
+              '6' => { 'data' => 'company', 'name' => '', 'searchable' => 'false', 'orderable' => 'false', 'search' => { 'value' => '', 'regex' => 'false' } },
+              '7' => { 'data' => 'actions', 'name' => '', 'searchable' => 'false', 'orderable' => 'false', 'search' => { 'value' => '', 'regex' => 'false' } }
+            },
+            'order' => { '0' => { 'column' => '2', 'dir' => 'desc' } },
+            'start' => '0',
+            'length' => '3',
+            'search' => { 'value' => '', 'regex' => 'false' },
+            '_' => Time.current.to_i.to_s
+          }
+        end
+
+        let(:sql_query) do
+          <<~SQL.split("\n").join(' ')
+            SELECT DISTINCT "employees".*
+            FROM "employees"
+            INNER JOIN "companies" ON "companies"."id" = "employees"."company_id"
+            WHERE (age < 80)
+            AND "emmployees.created_at" BETWEEN "2021-09-01" AND "2021-09-05"#{' '}
+            ORDER BY "emmployees.full_name"#{' '}
+            LIMIT
+          SQL
+        end
+        it('to_sql') { expect(subject.get_raw_records.to_sql).to eq sql_query }
+        it('definition') { expect(subject.get_raw_records).to be_a ActiveRecord::Relation }
+      end
     end
 
     describe '#data' do

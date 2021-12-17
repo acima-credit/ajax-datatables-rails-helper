@@ -104,6 +104,20 @@ module AjaxDatatablesRails
     end
 
     class ActionColumn < Column
+      class Link
+        def initialize(name, options = {})
+          @name = name
+          @options = options
+        end
+
+        def to_hash
+          {
+            title: @options[:title],
+            url: @options[:url]
+          }.compact
+        end
+      end
+
       def self.known_fields
         @known_fields ||= super.dup.push(:links).freeze
       end
@@ -122,11 +136,7 @@ module AjaxDatatablesRails
       end
 
       def add_link(name, options = {})
-        @links[name.to_sym] = options
-      end
-
-      def links_ary
-        @links.each_with_object([]) { |(k, v), ary| ary.push v.update(name: k) }
+        @links[name.to_sym] = Link.new(name, options).to_hash
       end
 
       def data?

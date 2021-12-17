@@ -34,6 +34,9 @@ module AjaxDatatablesRails
         elsif search[:values]
           options[:type] = 'select'
           options[:values] = search[:values]
+        elsif search[:cond] == :date_range
+          options[:type] = 'date_range'
+          options[:delimiter] = search[:delimiter] || '|'
         else
           options[:type] = 'text'
         end

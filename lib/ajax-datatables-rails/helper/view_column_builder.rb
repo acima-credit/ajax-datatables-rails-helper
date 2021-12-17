@@ -18,6 +18,7 @@ module AjaxDatatablesRails
       def build
         @column.to_hash(FIELDS).tap do |options|
           options[:cond] = @column.search[:cond] if @column.search&.dig(:cond)
+          options[:delimiter] = @column.search[:delimiter] if @column.search&.dig(:delimiter)
         end
       end
     end
