@@ -218,15 +218,48 @@ RSpec.describe EmployeeDatatable, type: :datatable do
 
     describe '#get_raw_records' do
       let(:sql_query) do
-        <<~SQL.split("\n").join(' ')
-          SELECT DISTINCT "employees".*
+        <<~SQL.squish
+          SELECT "employees".*
           FROM "employees"
-          INNER JOIN "companies" ON "companies"."id" = "employees"."company_id"
           WHERE (age < 80)
         SQL
       end
-      it('to_sql') { expect(subject.get_raw_records.to_sql).to eq sql_query }
-      it('definition') { expect(subject.get_raw_records).to be_a ActiveRecord::Relation }
+      let(:result) { subject.get_raw_records }
+      it('to_sql') { expect(result.to_sql).to eq sql_query }
+      it('definition') { expect(result).to be_a ActiveRecord::Relation }
+    end
+
+    describe '#retrieve_records' do
+      context 'basic' do
+        let(:params) { build_params }
+        let(:sql_query) do
+          <<~SQL.squish
+            SELECT "employees".*
+            FROM "employees" WHERE (age < 80)
+            ORDER BY employees.id ASC IS NULL
+            LIMIT 3
+            OFFSET 0
+          SQL
+        end
+        let(:result) { subject.send :retrieve_records }
+        it('to_sql') { expect(result.to_sql).to eq sql_query }
+        it('definition') { expect(result).to be_a ActiveRecord::Relation }
+      end
+      context 'sorted' do
+        let(:params) { build_params sort_col: 'username', sort_dir: 'desc' }
+        let(:sql_query) do
+          <<~SQL.squish
+            SELECT "employees".*
+            FROM "employees" WHERE (age < 80)
+            ORDER BY employees.username DESC IS NULL
+            LIMIT 3
+            OFFSET 0
+          SQL
+        end
+        let(:result) { subject.send :retrieve_records }
+        it('to_sql') { expect(result.to_sql).to eq sql_query }
+        it('definition') { expect(result).to be_a ActiveRecord::Relation }
+      end
     end
 
     describe '#data' do
