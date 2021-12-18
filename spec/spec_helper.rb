@@ -81,7 +81,9 @@ end
 module DatatablesHelpers
   extend RSpec::Core::SharedContext
 
+  let(:datatable) { described_class }
   let(:model) { described_class.model }
+  let(:table_name) { model.table_name }
 
   let(:params) { {} }
   let(:conv_params) { ActionController::Parameters.new params }
@@ -139,6 +141,31 @@ module DatatablesHelpers
   let(:first_employees) { [emp1, emp2] }
   let(:second_employees) { [emp3, emp4, emp5, emp6] }
   let(:all_employees) { first_employees + second_employees }
+
+  def build_params(start: 0, length: 3, sort_dir: 'asc', sort_col: 'id', sort_idx: 0, searches: {})
+    columns = datatable.columns.each_with_index.each_with_object({}) do |((name, col), idx), hsh|
+      sort_idx = idx if sort_col && sort_col.to_s == name.to_s
+      hsh[idx.to_s] = {
+        data: name.to_s,
+        name: '',
+        searchable: col.searchable,
+        orderable: col.orderable,
+        search: {
+          value: searches.fetch(name, ''),
+          regex: false
+        }
+      }
+    end
+    {
+      draw: 1,
+      columns: columns,
+      order: { 0 => { column: sort_idx.to_s, dir: sort_dir.to_s } },
+      start: start.to_s,
+      length: length.to_s,
+      search: { value: '', regex: false },
+      _: Time.current.to_i
+    }.deep_stringify_keys
+  end
 end
 
 RSpec.configure do |config|

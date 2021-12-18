@@ -25,6 +25,10 @@ class EmployeeDatatable < AjaxDatatablesRails::ActiveRecord
   def base_scope
     super.where('age < ?', 80)
   end
+
+  # def get_raw_records
+  #   base_scope.joins(:company).references(:company).distinct
+  # end
 end
 
 RSpec.describe EmployeeDatatable, type: :datatable do
@@ -214,88 +218,47 @@ RSpec.describe EmployeeDatatable, type: :datatable do
 
     describe '#get_raw_records' do
       let(:sql_query) do
-        <<~SQL.split("\n").join(' ')
-          SELECT DISTINCT "employees".*
+        <<~SQL.squish
+          SELECT "employees".*
           FROM "employees"
-          INNER JOIN "companies" ON "companies"."id" = "employees"."company_id"
           WHERE (age < 80)
         SQL
       end
-      it('to_sql') { expect(subject.get_raw_records.to_sql).to eq sql_query }
-      it('definition') { expect(subject.get_raw_records).to be_a ActiveRecord::Relation }
+      let(:result) { subject.get_raw_records }
+      it('to_sql') { expect(result.to_sql).to eq sql_query }
+      it('definition') { expect(result).to be_a ActiveRecord::Relation }
+    end
 
-      context 'with ordering' do
-        let(:params) do
-          {
-            'draw' => '12',
-            'columns' => {
-              '0' => { 'data' => 'id', 'name' => '', 'searchable' => 'true', 'orderable' => 'true', 'search' => { 'value' => '', 'regex' => 'false' } },
-              '1' => { 'data' => 'username', 'name' => '', 'searchable' => 'true', 'orderable' => 'true', 'search' => { 'value' => '', 'regex' => 'false' } },
-              '2' => { 'data' => 'fullname', 'name' => '', 'searchable' => 'true', 'orderable' => 'true', 'search' => { 'value' => '', 'regex' => 'false' } },
-              '3' => { 'data' => 'age', 'name' => '', 'searchable' => 'true', 'orderable' => 'true', 'search' => { 'value' => '', 'regex' => 'false' } },
-              '4' => { 'data' => 'hired_at', 'name' => '', 'searchable' => 'false', 'orderable' => 'true', 'search' => { 'value' => '', 'regex' => 'false' } },
-              '5' => { 'data' => 'created_at', 'name' => '', 'searchable' => 'true', 'orderable' => 'true', 'search' => { 'value' => '', 'regex' => 'false' } },
-              '6' => { 'data' => 'company', 'name' => '', 'searchable' => 'false', 'orderable' => 'false', 'search' => { 'value' => '', 'regex' => 'false' } },
-              '7' => { 'data' => 'actions', 'name' => '', 'searchable' => 'false', 'orderable' => 'false', 'search' => { 'value' => '', 'regex' => 'false' } }
-            },
-            'order' => { '0' => { 'column' => '2', 'dir' => 'desc' } },
-            'start' => '0',
-            'length' => '3',
-            'search' => { 'value' => '', 'regex' => 'false' },
-            '_' => Time.current.to_i.to_s
-          }
-        end
-
+    describe '#retrieve_records' do
+      context 'basic' do
+        let(:params) { build_params }
         let(:sql_query) do
-          <<~SQL.split("\n").join(' ')
-            SELECT DISTINCT "employees".*
-            FROM "employees"
-            INNER JOIN "companies" ON "companies"."id" = "employees"."company_id"
-            WHERE (age < 80)
-            ORDER BY "emmployees.full_name"#{' '}
-            LIMIT
+          <<~SQL.squish
+            SELECT "employees".*
+            FROM "employees" WHERE (age < 80)
+            ORDER BY employees.id ASC IS NULL
+            LIMIT 3
+            OFFSET 0
           SQL
         end
-        it('to_sql') { expect(subject.get_raw_records.to_sql).to eq sql_query }
-        it('definition') { expect(subject.get_raw_records).to be_a ActiveRecord::Relation }
+        let(:result) { subject.send :retrieve_records }
+        it('to_sql') { expect(result.to_sql).to eq sql_query }
+        it('definition') { expect(result).to be_a ActiveRecord::Relation }
       end
-
-      context 'with ordering', :focus do
-        let(:params) do
-          {
-            'draw' => '12',
-            'columns' => {
-              '0' => { 'data' => 'id', 'name' => '', 'searchable' => 'true', 'orderable' => 'true', 'search' => { 'value' => '', 'regex' => 'false' } },
-              '1' => { 'data' => 'username', 'name' => '', 'searchable' => 'true', 'orderable' => 'true', 'search' => { 'value' => '', 'regex' => 'false' } },
-              '2' => { 'data' => 'fullname', 'name' => '', 'searchable' => 'true', 'orderable' => 'true', 'search' => { 'value' => '', 'regex' => 'false' } },
-              '3' => { 'data' => 'age', 'name' => '', 'searchable' => 'true', 'orderable' => 'true', 'search' => { 'value' => '', 'regex' => 'false' } },
-              '4' => { 'data' => 'hired_at', 'name' => '', 'searchable' => 'false', 'orderable' => 'true', 'search' => { 'value' => '', 'regex' => 'false' } },
-              '5' => { 'data' => 'created_at', 'name' => '', 'searchable' => 'true', 'orderable' => 'true',
-                       'search' => { 'value' => '2021-09-01|2021-09-05', 'regex' => 'false' } },
-              '6' => { 'data' => 'company', 'name' => '', 'searchable' => 'false', 'orderable' => 'false', 'search' => { 'value' => '', 'regex' => 'false' } },
-              '7' => { 'data' => 'actions', 'name' => '', 'searchable' => 'false', 'orderable' => 'false', 'search' => { 'value' => '', 'regex' => 'false' } }
-            },
-            'order' => { '0' => { 'column' => '2', 'dir' => 'desc' } },
-            'start' => '0',
-            'length' => '3',
-            'search' => { 'value' => '', 'regex' => 'false' },
-            '_' => Time.current.to_i.to_s
-          }
-        end
-
+      context 'sorted' do
+        let(:params) { build_params sort_col: 'username', sort_dir: 'desc' }
         let(:sql_query) do
-          <<~SQL.split("\n").join(' ')
-            SELECT DISTINCT "employees".*
-            FROM "employees"
-            INNER JOIN "companies" ON "companies"."id" = "employees"."company_id"
-            WHERE (age < 80)
-            AND "emmployees.created_at" BETWEEN "2021-09-01" AND "2021-09-05"#{' '}
-            ORDER BY "emmployees.full_name"#{' '}
-            LIMIT
+          <<~SQL.squish
+            SELECT "employees".*
+            FROM "employees" WHERE (age < 80)
+            ORDER BY employees.username DESC IS NULL
+            LIMIT 3
+            OFFSET 0
           SQL
         end
-        it('to_sql') { expect(subject.get_raw_records.to_sql).to eq sql_query }
-        it('definition') { expect(subject.get_raw_records).to be_a ActiveRecord::Relation }
+        let(:result) { subject.send :retrieve_records }
+        it('to_sql') { expect(result.to_sql).to eq sql_query }
+        it('definition') { expect(result).to be_a ActiveRecord::Relation }
       end
     end
 

@@ -124,21 +124,37 @@ module AjaxDatatablesRails
       end
 
       def get_raw_records
-        scope = base_scope
-        %i[joins includes references].each do |type|
-          model_query[type].each { |value| scope = scope.send type, value }
+        base_scope.tap do |scope|
+          changed = false
+          changed, scope = update_scope_joins(changed, scope)
+          changed, scope = update_scope_selects(changed, scope)
+          scope.distinct if changed
         end
-        values = model_query[:selects].flatten.join(', ')
-        scope = scope.select values unless values.blank?
-        scope.distinct
-      end
-
-      def additional_data
-        {}
       end
 
       def data
         records.map { |row| build_record_entry row }
+      end
+
+      private
+
+      def update_scope_joins(changed, scope)
+        %i[joins includes references].each do |type|
+          model_query[type].each do |value|
+            scope = scope.send type, value
+            changed = true
+          end
+        end
+        [changed, scope]
+      end
+
+      def update_scope_selects(changed, scope)
+        values = model_query[:selects].flatten.join(', ')
+        unless values.blank?
+          scope = scope.select values
+          changed = true
+        end
+        [changed, scope]
       end
     end
   end

@@ -50,6 +50,8 @@ Metrics/ModuleLength:
 Metrics/ParameterLists:
   Max: 5
   CountKeywordArgs: true
+  Exclude:
+    - spec/**/*.rb
 
 Metrics/AbcSize:
   Enabled: false
