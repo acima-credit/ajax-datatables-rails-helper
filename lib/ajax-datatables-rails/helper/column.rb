@@ -111,10 +111,7 @@ module AjaxDatatablesRails
         end
 
         def to_hash
-          {
-            title: @options[:title],
-            url: @options[:url]
-          }.compact
+          @options.merge(name: @name.to_s).compact
         end
       end
 

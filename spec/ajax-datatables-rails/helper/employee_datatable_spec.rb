@@ -63,7 +63,7 @@ RSpec.describe EmployeeDatatable, type: :datatable do
                               orderable: false, searchable: false, search: nil, display: :none },
           actions: { field: nil, title: 'Actions', source: nil,
                      orderable: false, searchable: false, search: nil, display: nil,
-                     links: { addresses: { title: 'Addresses', url: '/admin/employee/addressed/:id' } } }
+                     links: { addresses: { name: 'addresses', title: 'Addresses', url: '/admin/employee/addressed/:id' } } }
         }
       end
 

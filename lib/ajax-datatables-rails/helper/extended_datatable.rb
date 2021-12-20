@@ -101,8 +101,6 @@ module AjaxDatatablesRails
       end
 
       def initialize(params, options = {})
-        puts ">> initialize | params : (#{params.class.name}) #{params.inspect}"
-        puts ">> initialize | options : (#{options.class.name}) #{options.inspect}"
         super
       end
 
