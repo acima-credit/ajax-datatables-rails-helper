@@ -9,6 +9,7 @@ require 'action_pack'
 require 'ajax-datatables-rails'
 require 'ajax-datatables-rails-helper'
 require 'fatherly_advice'
+require 'timecop'
 require 'rspec/json_expectations'
 require 'rspec/core/shared_context'
 
@@ -127,6 +128,7 @@ module DatatablesHelpers
 
   let(:date1) { Time.new 2020, 1, 1, 10, 15 }
   let(:date2) { Time.new 2020, 3, 15, 11, 15 }
+  let(:date3) { Time.new 2021, 6, 15, 12, 15 }
 
   let!(:cmp1) { create :company, 'First Company', 'shoes' }
   let!(:cmp2) { create :company, 'Second Company', 'sandals' }
@@ -142,7 +144,7 @@ module DatatablesHelpers
   let(:second_employees) { [emp3, emp4, emp5, emp6] }
   let(:all_employees) { first_employees + second_employees }
 
-  def build_params(start: 0, length: 3, sort_dir: 'asc', sort_col: 'id', sort_idx: 0, searches: {})
+  def build_params(start: 0, length: 3, sort_dir: 'asc', sort_col: 'id', sort_idx: 0, searches: {}, extras: {})
     columns = datatable.columns.each_with_index.each_with_object({}) do |((name, col), idx), hsh|
       sort_idx = idx if sort_col && sort_col.to_s == name.to_s
       hsh[idx.to_s] = {
@@ -155,6 +157,7 @@ module DatatablesHelpers
           regex: false
         }
       }
+      hsh[idx.to_s][:data] = '' if name.to_s == 'actions'
     end
     {
       draw: 1,
@@ -164,11 +167,15 @@ module DatatablesHelpers
       length: length.to_s,
       search: { value: '', regex: false },
       _: Time.current.to_i
-    }.deep_stringify_keys
+    }.update(extras).deep_stringify_keys
   end
 end
 
 RSpec.configure do |config|
   config.include DatatablesHelpers, type: :datatable
   config.after { described_class.model.delete_all if described_class.respond_to?(:model) }
+  # timecop
+  config.before(:each, past_time: true) { Timecop.freeze date1 }
+  config.before(:each, middle_time: true) { Timecop.freeze date2 }
+  config.before(:each, future_time: true) { Timecop.freeze date3 }
 end

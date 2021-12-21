@@ -5,6 +5,7 @@ require 'spec_helper'
 class EmployeeDatatable < AjaxDatatablesRails::ActiveRecord
   include AjaxDatatablesRails::Helper::ExtendedDatatable
 
+  self.db_adapter = :postgresql
   set_model :employee
 
   column 'id', :orderable, title: 'ID', search: { cond: :eq }
@@ -13,7 +14,9 @@ class EmployeeDatatable < AjaxDatatablesRails::ActiveRecord
   column 'status', :orderable, title: 'Status', search: { values: model::STATUS.values }, display: { align: :center }
   column 'age', :orderable, title: 'Age', search: { cond: :eq }
   column 'hired_at', :orderable
-  column 'created_at', :orderable, search: { cond: :date_range, delimiter: '|' }, display: { render: 'DTUtils.displayTimestamp' }
+  column 'created_at', :orderable,
+         search: { cond: :date_range, delimiter: '|', default: :today, values: %w[today yesterday this_week last_week] },
+         display: { render: 'DTUtils.displayTimestamp' }
   column 'comment', display: :none
   rel_column 'company', :name, title: 'Company'
   rel_column 'company', :category, title: 'Category', display: :none
@@ -25,13 +28,9 @@ class EmployeeDatatable < AjaxDatatablesRails::ActiveRecord
   def base_scope
     super.where('age < ?', 80)
   end
-
-  # def get_raw_records
-  #   base_scope.joins(:company).references(:company).distinct
-  # end
 end
 
-RSpec.describe EmployeeDatatable, type: :datatable do
+RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
   let(:statuses) { model::STATUS.values }
 
   describe 'instance' do
@@ -53,7 +52,8 @@ RSpec.describe EmployeeDatatable, type: :datatable do
           hired_at: { field: 'hired_at', title: 'Hired', source: "#{model.name}.hired_at",
                       orderable: true, searchable: false, search: nil, display: nil },
           created_at: { field: 'created_at', title: 'Created', source: "#{model.name}.created_at",
-                        orderable: true, searchable: true, search: { cond: :date_range, delimiter: '|' },
+                        orderable: true, searchable: true,
+                        search: { cond: :date_range, delimiter: '|', default: :today, values: %w[today yesterday this_week last_week] },
                         display: { render: 'DTUtils.displayTimestamp' } },
           comment: { field: 'comment', title: 'Comment', source: "#{model.name}.comment",
                      orderable: false, searchable: false, search: nil, display: :none },
@@ -188,7 +188,7 @@ RSpec.describe EmployeeDatatable, type: :datatable do
           { field: 'status', title: 'Status', type: 'select', values: statuses },
           { field: 'age', title: 'Age', type: 'text' },
           { field: 'hired_at', title: 'Hired', type: 'none' },
-          { field: 'created_at', title: 'Created', type: 'date_range', delimiter: '|' },
+          { field: 'created_at', title: 'Created', type: 'date_range', delimiter: '|', values: %w[today yesterday this_week last_week] },
           { field: 'company_name', title: 'Company', type: 'none' },
           { field: nil, title: 'Actions', type: 'none' }
         ]
@@ -197,7 +197,7 @@ RSpec.describe EmployeeDatatable, type: :datatable do
       it('definition') { expect(subject.js_searches).to eq expected }
 
       context 'with query params' do
-        let(:params) { { username: 'emp3', status: 'active', unknown: 'some.value' } }
+        let(:params) { build_params extras: { username: 'emp3', status: 'active', unknown: 'some.value', created_at: 'yesterday' } }
         let(:expected) do
           [
             { field: 'id', title: 'ID', type: 'text' },
@@ -206,7 +206,7 @@ RSpec.describe EmployeeDatatable, type: :datatable do
             { field: 'status', title: 'Status', type: 'select', value: 'active', values: statuses },
             { field: 'age', title: 'Age', type: 'text' },
             { field: 'hired_at', title: 'Hired', type: 'none' },
-            { field: 'created_at', title: 'Created', type: 'date_range', delimiter: '|' },
+            { field: 'created_at', title: 'Created', type: 'date_range', delimiter: '|', value: 'yesterday', values: %w[today yesterday this_week last_week] },
             { field: 'company_name', title: 'Company', type: 'none' },
             { field: nil, title: 'Actions', type: 'none' }
           ]
@@ -229,19 +229,21 @@ RSpec.describe EmployeeDatatable, type: :datatable do
       it('definition') { expect(result).to be_a ActiveRecord::Relation }
     end
 
-    describe '#retrieve_records' do
+    describe '#retrieve_records', :focus do
+      let(:result) { subject.send :retrieve_records }
       context 'basic' do
         let(:params) { build_params }
         let(:sql_query) do
           <<~SQL.squish
             SELECT "employees".*
-            FROM "employees" WHERE (age < 80)
-            ORDER BY employees.id ASC IS NULL
+            FROM "employees"
+            WHERE (age < 80)
+            AND "employees"."created_at" BETWEEN '2020-03-15 06:00:00' AND '2020-03-16 05:59:59'
+            ORDER BY employees.id ASC NULLS LAST
             LIMIT 3
             OFFSET 0
           SQL
         end
-        let(:result) { subject.send :retrieve_records }
         it('to_sql') { expect(result.to_sql).to eq sql_query }
         it('definition') { expect(result).to be_a ActiveRecord::Relation }
       end
@@ -250,24 +252,71 @@ RSpec.describe EmployeeDatatable, type: :datatable do
         let(:sql_query) do
           <<~SQL.squish
             SELECT "employees".*
-            FROM "employees" WHERE (age < 80)
-            ORDER BY employees.username DESC IS NULL
+            FROM "employees"
+            WHERE (age < 80)
+            AND "employees"."created_at" BETWEEN '2020-03-15 06:00:00' AND '2020-03-16 05:59:59'
+            ORDER BY employees.username DESC NULLS LAST
             LIMIT 3
             OFFSET 0
           SQL
         end
-        let(:result) { subject.send :retrieve_records }
         it('to_sql') { expect(result.to_sql).to eq sql_query }
         it('definition') { expect(result).to be_a ActiveRecord::Relation }
+      end
+      context 'search created_at' do
+        let(:params) { build_params searches: { created_at: created_at } }
+        let(:sql_query) do
+          <<~SQL.squish
+            SELECT "employees".*
+            FROM "employees"
+            WHERE (age < 80)
+            AND "employees"."created_at" BETWEEN '#{dates.first}' AND '#{dates.last}'
+            ORDER BY employees.id ASC NULLS LAST
+            LIMIT 3
+            OFFSET 0
+          SQL
+        end
+        context 'today' do
+          let(:created_at) { 'today' }
+          let(:dates) { ['2020-03-15 06:00:00', '2020-03-16 05:59:59'] }
+          it('to_sql') { expect(result.to_sql).to eq sql_query }
+        end
+        context 'yesterday' do
+          let(:created_at) { 'yesterday' }
+          let(:dates) { ['2020-03-14 06:00:00', '2020-03-15 05:59:59'] }
+          it('to_sql') { expect(result.to_sql).to eq sql_query }
+        end
+        context 'this_week' do
+          let(:created_at) { 'this_week' }
+          let(:dates) { ['2020-03-09 06:00:00', '2020-03-16 05:59:59'] }
+          it('to_sql') { expect(result.to_sql).to eq sql_query }
+        end
+        context 'last_week' do
+          let(:created_at) { 'last_week' }
+          let(:dates) { ['2020-03-02 07:00:00', '2020-03-09 05:59:59'] }
+          it('to_sql') { expect(result.to_sql).to eq sql_query }
+        end
+        context 'this_month' do
+          let(:created_at) { 'this_month' }
+          let(:dates) { ['2020-03-01 07:00:00', '2020-03-16 05:59:59'] }
+          it('to_sql') { expect(result.to_sql).to eq sql_query }
+        end
+        context 'last_month', :focus do
+          let(:created_at) { 'last_month' }
+          let(:dates) { ['2020-02-01 07:00:00', '2020-03-01 06:59:59'] }
+          it('to_sql') { expect(result.to_sql).to eq sql_query }
+        end
       end
     end
 
     describe '#data' do
-      let!(:items) { all_employees }
-      let(:params) { { order: { '0' => { 'column' => '1', 'dir' => 'asc' } }, start: '1', length: '2' } }
-      let(:exp_result) { build_exp_items 1, 2 }
+      context 'basic' do
+        let!(:items) { second_employees }
+        let(:params) { build_params sort_col: 'id', start: 1, length: 2 }
+        let(:exp_result) { build_exp_items 1, 2 }
 
-      it('result') { expect(subject.data).to eq exp_result }
+        it('result') { expect(subject.data).to eq exp_result }
+      end
     end
 
     describe '#build_record_entry' do

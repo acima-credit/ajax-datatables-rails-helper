@@ -101,7 +101,7 @@ module AjaxDatatablesRails
       end
 
       def initialize(params, options = {})
-        super
+        super filtered_params(params), options
       end
 
       delegate :model,
@@ -135,6 +135,10 @@ module AjaxDatatablesRails
       end
 
       private
+
+      def filtered_params(params)
+        ParamsBuilder.build params, columns
+      end
 
       def update_scope_joins(changed, scope)
         %i[joins includes references].each do |type|

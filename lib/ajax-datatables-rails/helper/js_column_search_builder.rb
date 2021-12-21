@@ -31,12 +31,13 @@ module AjaxDatatablesRails
 
         if search.nil?
           options[:type] = 'none'
-        elsif search[:values]
-          options[:type] = 'select'
-          options[:values] = search[:values]
         elsif search[:cond] == :date_range
           options[:type] = 'date_range'
           options[:delimiter] = search[:delimiter] || '|'
+          options[:values] = search[:values] if search[:values]
+        elsif search[:values]
+          options[:type] = 'select'
+          options[:values] = search[:values]
         else
           options[:type] = 'text'
         end
