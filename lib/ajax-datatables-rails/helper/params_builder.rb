@@ -57,11 +57,8 @@ module AjaxDatatablesRails
             @dictionary ||= {
               today: ->(_column_params, column) { date_pair column, today },
               yesterday: ->(_column_params, column) { date_pair column, today - 1 },
-              this_week: ->(_column_params, column) { date_pair column, today.at_beginning_of_week, today },
-              last_week: ->(_column_params, column) {
-                eow = today.at_beginning_of_week - 1
-                date_pair column, eow - 6, eow
-              },
+              last_7_days: ->(_column_params, column) { date_pair column, today - 6, today },
+              last_30_days: ->(_column_params, column) { date_pair column, today - 29, today },
               this_month: ->(_column_params, column) {
                 bom = today.at_beginning_of_month
                 date_pair column, bom, today
@@ -69,7 +66,8 @@ module AjaxDatatablesRails
               last_month: ->(_column_params, column) {
                 eom = today.at_beginning_of_month - 1
                 date_pair column, eom.at_beginning_of_month, eom
-              }
+              },
+              last_3_months: ->(_column_params, column) { date_pair column, today - 89, today }
             }.with_indifferent_access
           end
 

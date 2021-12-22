@@ -286,14 +286,14 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
           let(:dates) { ['2020-03-14 06:00:00', '2020-03-15 05:59:59'] }
           it('to_sql') { expect(result.to_sql).to eq sql_query }
         end
-        context 'this_week' do
-          let(:created_at) { 'this_week' }
+        context 'last_7_days' do
+          let(:created_at) { 'last_7_days' }
           let(:dates) { ['2020-03-09 06:00:00', '2020-03-16 05:59:59'] }
           it('to_sql') { expect(result.to_sql).to eq sql_query }
         end
-        context 'last_week' do
-          let(:created_at) { 'last_week' }
-          let(:dates) { ['2020-03-02 07:00:00', '2020-03-09 05:59:59'] }
+        context 'last_30_days' do
+          let(:created_at) { 'last_30_days' }
+          let(:dates) { ['2020-02-15 07:00:00', '2020-03-16 05:59:59'] }
           it('to_sql') { expect(result.to_sql).to eq sql_query }
         end
         context 'this_month' do
@@ -304,6 +304,11 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
         context 'last_month', :focus do
           let(:created_at) { 'last_month' }
           let(:dates) { ['2020-02-01 07:00:00', '2020-03-01 06:59:59'] }
+          it('to_sql') { expect(result.to_sql).to eq sql_query }
+        end
+        context 'last_3_months', :focus do
+          let(:created_at) { 'last_3_months' }
+          let(:dates) { ['2019-12-17 07:00:00', '2020-03-16 05:59:59'] }
           it('to_sql') { expect(result.to_sql).to eq sql_query }
         end
       end
