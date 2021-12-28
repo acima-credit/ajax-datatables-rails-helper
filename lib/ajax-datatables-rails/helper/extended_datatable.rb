@@ -122,12 +122,12 @@ module AjaxDatatablesRails
       end
 
       def get_raw_records
-        base_scope.tap do |scope|
-          changed = false
-          changed, scope = update_scope_joins(changed, scope)
-          changed, scope = update_scope_selects(changed, scope)
-          scope.distinct if changed
-        end
+        scope = base_scope
+        changed = false
+        changed, scope = update_scope_joins(changed, scope)
+        changed, scope = update_scope_selects(changed, scope)
+        scope.distinct if changed
+        scope
       end
 
       def data
