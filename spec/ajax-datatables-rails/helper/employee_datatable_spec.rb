@@ -366,7 +366,7 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
           let(:dates) { ['2020-02-01 07:00:00', '2020-03-01 06:59:59'] }
           it('to_sql') { expect(result.to_sql).to eq sql_query }
         end
-        context 'last_3_months', :focus do
+        context 'last_3_months' do
           let(:created_at) { 'last_3_months' }
           let(:dates) { ['2019-12-17 07:00:00', '2020-03-16 05:59:59'] }
           it('to_sql') { expect(result.to_sql).to eq sql_query }
@@ -375,7 +375,7 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
     end
 
     describe '#data' do
-      context 'basic', :focus do
+      context 'basic' do
         let!(:items) { second_employees }
         let(:params) { build_params sort_col: 'id', start: 1, length: 2 }
         let(:exp_result) { build_exp_items 1, 2 }
