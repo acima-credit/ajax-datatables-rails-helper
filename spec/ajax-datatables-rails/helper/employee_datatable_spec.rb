@@ -221,15 +221,16 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
         <<~SQL.squish
           SELECT "employees".*
           FROM "employees"
+          INNER JOIN "companies" ON "companies"."id" = "employees"."company_id"
           WHERE (age < 80)
         SQL
       end
       let(:result) { subject.get_raw_records }
-      it('to_sql') { expect(result.to_sql).to eq sql_query }
+      it('to_sql', :focus) { expect(result.to_sql).to eq sql_query }
       it('definition') { expect(result).to be_a ActiveRecord::Relation }
     end
 
-    describe '#retrieve_records', :focus do
+    describe '#retrieve_records' do
       let(:result) { subject.send :retrieve_records }
       context 'basic' do
         let(:params) { build_params }
@@ -237,6 +238,7 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
           <<~SQL.squish
             SELECT "employees".*
             FROM "employees"
+            INNER JOIN "companies" ON "companies"."id" = "employees"."company_id"
             WHERE (age < 80)
             AND "employees"."created_at" BETWEEN '2020-03-15 06:00:00' AND '2020-03-16 05:59:59'
             ORDER BY employees.id ASC NULLS LAST
@@ -253,6 +255,7 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
           <<~SQL.squish
             SELECT "employees".*
             FROM "employees"
+            INNER JOIN "companies" ON "companies"."id" = "employees"."company_id"
             WHERE (age < 80)
             AND "employees"."created_at" BETWEEN '2020-03-15 06:00:00' AND '2020-03-16 05:59:59'
             ORDER BY employees.username DESC NULLS LAST
@@ -269,6 +272,7 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
           <<~SQL.squish
             SELECT "employees".*
             FROM "employees"
+            INNER JOIN "companies" ON "companies"."id" = "employees"."company_id"
             WHERE (age < 80)
             AND "employees"."created_at" BETWEEN '#{dates.first}' AND '#{dates.last}'
             ORDER BY employees.id ASC NULLS LAST
@@ -301,7 +305,7 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
           let(:dates) { ['2020-03-01 07:00:00', '2020-03-16 05:59:59'] }
           it('to_sql') { expect(result.to_sql).to eq sql_query }
         end
-        context 'last_month', :focus do
+        context 'last_month' do
           let(:created_at) { 'last_month' }
           let(:dates) { ['2020-02-01 07:00:00', '2020-03-01 06:59:59'] }
           it('to_sql') { expect(result.to_sql).to eq sql_query }

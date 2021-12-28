@@ -15,7 +15,9 @@ require 'rspec/core/shared_context'
 
 FatherlyAdvice.ext :enums
 
-ActiveRecord::Base.logger = Logger.new($stderr).tap { |x| x.level = 1 }
+ActiveRecord::Base.logger = Logger.new($stderr).tap do |x|
+  x.level = ENV.fetch('AR_DEBUG', 'false') == 'true' ? 0 : 1
+end
 
 ActiveRecord::Base.establish_connection(
   adapter: 'sqlite3',
