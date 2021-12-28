@@ -219,14 +219,28 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
     describe '#get_raw_records' do
       let(:sql_query) do
         <<~SQL.squish
-          SELECT "employees".*
+          SELECT
+          "employees"."id" AS t0_r0,
+          "employees"."company_id" AS t0_r1,
+          "employees"."username" AS t0_r2,
+          "employees"."full_name" AS t0_r3,
+          "employees"."status" AS t0_r4,
+          "employees"."age" AS t0_r5, "employees"."hired_at" AS t0_r6,
+          "employees"."comment" AS t0_r7,
+          "employees"."created_at" AS t0_r8,
+          "employees"."updated_at" AS t0_r9,
+          "companies"."id" AS t1_r0,
+          "companies"."name" AS t1_r1,
+          "companies"."category" AS t1_r2,
+          "companies"."created_at" AS t1_r3,
+          "companies"."updated_at" AS t1_r4
           FROM "employees"
-          INNER JOIN "companies" ON "companies"."id" = "employees"."company_id"
+          LEFT OUTER JOIN "companies" ON "companies"."id" = "employees"."company_id"
           WHERE (age < 80)
         SQL
       end
       let(:result) { subject.get_raw_records }
-      it('to_sql', :focus) { expect(result.to_sql).to eq sql_query }
+      it('to_sql') { expect(result.to_sql).to eq sql_query }
       it('definition') { expect(result).to be_a ActiveRecord::Relation }
     end
 
@@ -236,9 +250,23 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
         let(:params) { build_params }
         let(:sql_query) do
           <<~SQL.squish
-            SELECT "employees".*
+            SELECT
+            "employees"."id" AS t0_r0,
+            "employees"."company_id" AS t0_r1,
+            "employees"."username" AS t0_r2,
+            "employees"."full_name" AS t0_r3,
+            "employees"."status" AS t0_r4,
+            "employees"."age" AS t0_r5, "employees"."hired_at" AS t0_r6,
+            "employees"."comment" AS t0_r7,
+            "employees"."created_at" AS t0_r8,
+            "employees"."updated_at" AS t0_r9,
+            "companies"."id" AS t1_r0,
+            "companies"."name" AS t1_r1,
+            "companies"."category" AS t1_r2,
+            "companies"."created_at" AS t1_r3,
+            "companies"."updated_at" AS t1_r4
             FROM "employees"
-            INNER JOIN "companies" ON "companies"."id" = "employees"."company_id"
+            LEFT OUTER JOIN "companies" ON "companies"."id" = "employees"."company_id"
             WHERE (age < 80)
             AND "employees"."created_at" BETWEEN '2020-03-15 06:00:00' AND '2020-03-16 05:59:59'
             ORDER BY employees.id ASC NULLS LAST
@@ -253,9 +281,23 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
         let(:params) { build_params sort_col: 'username', sort_dir: 'desc' }
         let(:sql_query) do
           <<~SQL.squish
-            SELECT "employees".*
+            SELECT
+            "employees"."id" AS t0_r0,
+            "employees"."company_id" AS t0_r1,
+            "employees"."username" AS t0_r2,
+            "employees"."full_name" AS t0_r3,
+            "employees"."status" AS t0_r4,
+            "employees"."age" AS t0_r5, "employees"."hired_at" AS t0_r6,
+            "employees"."comment" AS t0_r7,
+            "employees"."created_at" AS t0_r8,
+            "employees"."updated_at" AS t0_r9,
+            "companies"."id" AS t1_r0,
+            "companies"."name" AS t1_r1,
+            "companies"."category" AS t1_r2,
+            "companies"."created_at" AS t1_r3,
+            "companies"."updated_at" AS t1_r4
             FROM "employees"
-            INNER JOIN "companies" ON "companies"."id" = "employees"."company_id"
+            LEFT OUTER JOIN "companies" ON "companies"."id" = "employees"."company_id"
             WHERE (age < 80)
             AND "employees"."created_at" BETWEEN '2020-03-15 06:00:00' AND '2020-03-16 05:59:59'
             ORDER BY employees.username DESC NULLS LAST
@@ -270,9 +312,23 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
         let(:params) { build_params searches: { created_at: created_at } }
         let(:sql_query) do
           <<~SQL.squish
-            SELECT "employees".*
+            SELECT
+            "employees"."id" AS t0_r0,
+            "employees"."company_id" AS t0_r1,
+            "employees"."username" AS t0_r2,
+            "employees"."full_name" AS t0_r3,
+            "employees"."status" AS t0_r4,
+            "employees"."age" AS t0_r5, "employees"."hired_at" AS t0_r6,
+            "employees"."comment" AS t0_r7,
+            "employees"."created_at" AS t0_r8,
+            "employees"."updated_at" AS t0_r9,
+            "companies"."id" AS t1_r0,
+            "companies"."name" AS t1_r1,
+            "companies"."category" AS t1_r2,
+            "companies"."created_at" AS t1_r3,
+            "companies"."updated_at" AS t1_r4
             FROM "employees"
-            INNER JOIN "companies" ON "companies"."id" = "employees"."company_id"
+            LEFT OUTER JOIN "companies" ON "companies"."id" = "employees"."company_id"
             WHERE (age < 80)
             AND "employees"."created_at" BETWEEN '#{dates.first}' AND '#{dates.last}'
             ORDER BY employees.id ASC NULLS LAST
@@ -319,7 +375,7 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
     end
 
     describe '#data' do
-      context 'basic' do
+      context 'basic', :focus do
         let!(:items) { second_employees }
         let(:params) { build_params sort_col: 'id', start: 1, length: 2 }
         let(:exp_result) { build_exp_items 1, 2 }

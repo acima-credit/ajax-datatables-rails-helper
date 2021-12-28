@@ -198,11 +198,7 @@ module AjaxDatatablesRails
       def get_join_type(args, opts)
         return opts[:type] if opts.key?(:type)
 
-        if args.include?(:includes)
-          :includes
-        else
-          :joins
-        end
+        args.include?(:joins) ? :joins : :includes
       end
     end
   end
