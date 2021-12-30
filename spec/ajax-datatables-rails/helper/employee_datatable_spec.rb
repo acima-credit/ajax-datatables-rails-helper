@@ -21,6 +21,8 @@ class EmployeeDatatable < AjaxDatatablesRails::ActiveRecord
   rel_column 'company', :name, title: 'Company'
   rel_column 'company', :category, title: 'Category', display: :none
 
+  dummy_column 'addresses_count'
+
   action_link :addresses,
               title: 'Addresses',
               url: '/admin/employee/addressed/:id'

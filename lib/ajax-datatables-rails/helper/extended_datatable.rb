@@ -64,6 +64,10 @@ module AjaxDatatablesRails
           end
         end
 
+        def dummy_column(name, *args, **custom_options)
+          columns[name.to_sym] = DummyColumn.new(name, model, *args, **custom_options)
+        end
+
         def action_link(name, **options)
           add_action_column
           action_column.add_link name, options

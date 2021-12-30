@@ -145,6 +145,21 @@ module AjaxDatatablesRails
       end
     end
 
+    class DummyColumn < Column
+      def initialize(name, model, *args, **custom_options)
+        super
+        @field = nil
+      end
+
+      def data?
+        true
+      end
+
+      def display?
+        true
+      end
+    end
+
     class RelatedColumn < Column
       def self.known_fields
         @known_fields ||= super.dup.push(:relation).freeze
