@@ -17,9 +17,11 @@ module AjaxDatatablesRails
       def to_hash
         { DT_RowId: @instance.id }.tap do |hash|
           columns.each do |key, column|
-            next unless column.data?
-
-            hash_set key, column, hash
+            if column.data?
+              hash_set key, column, hash
+            elsif column.dummy?
+              dummy_set key, column, hash
+            end
           end
         end
       end
@@ -30,6 +32,10 @@ module AjaxDatatablesRails
         new_key = key.to_s.tr('.', '_').to_sym
         new_value = get_value value
         hsh[new_key] = new_value
+      end
+
+      def dummy_set(key, column, hsh)
+        hsh[key] = column.build&.call(@instance) || column.default
       end
 
       def get_value(column)

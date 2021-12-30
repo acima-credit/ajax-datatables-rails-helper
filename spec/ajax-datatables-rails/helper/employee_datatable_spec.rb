@@ -5,6 +5,12 @@ require 'spec_helper'
 class EmployeeDatatable < AjaxDatatablesRails::ActiveRecord
   include AjaxDatatablesRails::Helper::ExtendedDatatable
 
+  module AddressesCountDisplayMixin
+    def self.call(row)
+      row.addresses.map(&:description).sort.join(' ')
+    end
+  end
+
   self.db_adapter = :postgresql
   set_model :employee
 
@@ -21,7 +27,10 @@ class EmployeeDatatable < AjaxDatatablesRails::ActiveRecord
   rel_column 'company', :name, title: 'Company'
   rel_column 'company', :category, title: 'Category', display: :none
 
-  dummy_column 'addresses_count'
+  dummy_column 'addresses_count',
+               title: 'Addresses',
+               display: { align: :center },
+               build: AddressesCountDisplayMixin
 
   action_link :addresses,
               title: 'Addresses',
@@ -63,6 +72,10 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
                           orderable: false, searchable: false, search: nil, display: nil },
           company_category: { field: 'company.category', title: 'Category', source: 'Company.category', relation: 'company',
                               orderable: false, searchable: false, search: nil, display: :none },
+          addresses_count: {
+            field: nil, title: 'Addresses', source: nil, build: described_class::AddressesCountDisplayMixin, default: nil,
+            orderable: false, searchable: false, search: nil, display: { align: :center }
+          },
           actions: { field: nil, title: 'Actions', source: nil,
                      orderable: false, searchable: false, search: nil, display: nil,
                      links: { addresses: { name: 'addresses', title: 'Addresses', url: '/admin/employee/addressed/:id' } } }
@@ -73,6 +86,7 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
         expect(column_types).to eq %w[
           AjaxDatatablesRails::Helper::ActionColumn
           AjaxDatatablesRails::Helper::Column
+          AjaxDatatablesRails::Helper::DummyColumn
           AjaxDatatablesRails::Helper::RelatedColumn
         ]
       end
@@ -92,6 +106,7 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
           comment: { source: "#{model.name}.comment", title: 'Comment', orderable: false, searchable: false },
           company_name: { source: 'Company.name', title: 'Company', orderable: false, searchable: false },
           company_category: { source: 'Company.category', title: 'Category', orderable: false, searchable: false },
+          addresses_count: { source: nil, title: 'Addresses', orderable: false, searchable: false },
           actions: { orderable: false, searchable: false, source: nil, title: 'Actions' }
         }
       end
@@ -110,6 +125,7 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
           { title: 'Hired', orderable: true, searchable: false, data: 'hired_at' },
           { title: 'Created', orderable: true, searchable: true, data: 'created_at', render: js('DTUtils.displayTimestamp') },
           { title: 'Company', orderable: false, searchable: false, data: 'company_name' },
+          { title: 'Addresses', orderable: false, searchable: false, data: nil, className: 'text-center' },
           { title: 'Actions', orderable: false, searchable: false, data: nil }
         ]
       end
@@ -168,6 +184,13 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
               "data": "company_name"
             },
             {
+              "title": "Addresses",
+              "orderable": false,
+              "searchable": false,
+              "data": null,
+              "className": "text-center"
+            },
+            {
               "title": "Actions",
               "orderable": false,
               "searchable": false,
@@ -192,6 +215,7 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
           { field: 'hired_at', title: 'Hired', type: 'none' },
           { field: 'created_at', title: 'Created', type: 'date_range', delimiter: '|', values: %w[today yesterday this_week last_week] },
           { field: 'company_name', title: 'Company', type: 'none' },
+          { field: nil, title: 'Addresses', type: 'none' },
           { field: nil, title: 'Actions', type: 'none' }
         ]
       end
@@ -210,6 +234,7 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
             { field: 'hired_at', title: 'Hired', type: 'none' },
             { field: 'created_at', title: 'Created', type: 'date_range', delimiter: '|', value: 'yesterday', values: %w[today yesterday this_week last_week] },
             { field: 'company_name', title: 'Company', type: 'none' },
+            { field: nil, title: 'Addresses', type: 'none' },
             { field: nil, title: 'Actions', type: 'none' }
           ]
         end
@@ -400,6 +425,7 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
           comment: row.comment,
           company_name: cmp1.name,
           company_category: cmp1.category,
+          addresses_count: 'main office',
           DT_RowId: row.id
         }
       end

@@ -27,7 +27,7 @@ module AjaxDatatablesRails
         end
 
         def decorator(value = :none)
-          @decorator = value unless value == :none
+          @decorator = value.tap { |x| x.columns columns } unless value == :none
           @decorator ||= Class.new(::AjaxDatatablesRails::Helper::RowDecorator).tap do |x|
             x.columns columns
           end

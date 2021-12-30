@@ -58,6 +58,10 @@ module AjaxDatatablesRails
         display != :none
       end
 
+      def dummy?
+        false
+      end
+
       def related?
         false
       end
@@ -146,16 +150,29 @@ module AjaxDatatablesRails
     end
 
     class DummyColumn < Column
+      def self.known_fields
+        @known_fields ||= super.dup.push(:build, :default).freeze
+      end
+
+      attr_reader :build, :default
+
       def initialize(name, model, *args, **custom_options)
         super
         @field = nil
+        @source = nil
+        @build = custom_options[:build]
+        @default = custom_options[:default]
       end
 
       def data?
-        true
+        false
       end
 
       def display?
+        true
+      end
+
+      def dummy?
         true
       end
     end

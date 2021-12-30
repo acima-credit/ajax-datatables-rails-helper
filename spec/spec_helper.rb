@@ -101,7 +101,8 @@ module DatatablesHelpers
   def model_field_names
     {
       employee: %i[username full_name status age hired_at created_at company comment],
-      company: %i[name category]
+      company: %i[name category],
+      employee_address: %i[employee_id description street city state zip_code]
     }
   end
 
@@ -141,6 +142,9 @@ module DatatablesHelpers
   let!(:emp4) { create :employee, 'emp4', 'Employee Cuatro', 'inactive', 23, date2, date2, cmp2, 'emp04' }
   let!(:emp5) { create :employee, 'emp5', 'Employee Cinco', 'active', 45, date2, date2, cmp1, 'emp05' }
   let!(:emp6) { create :employee, 'emp6', 'Employee Seis', 'active', 85, date2, date2, cmp1, 'emp06' }
+
+  let!(:emp1_addr1) { create :employee_address, emp1.id, 'main', '123 E 456 N', 'Salt Lake', 'UT', '84000' }
+  let!(:emp1_addr2) { create :employee_address, emp1.id, 'office', '321 N 654 W', 'Salt Lake', 'UT', '84001' }
 
   let(:first_employees) { [emp1, emp2] }
   let(:second_employees) { [emp3, emp4, emp5, emp6] }
