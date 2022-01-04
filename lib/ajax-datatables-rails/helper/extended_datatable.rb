@@ -15,6 +15,22 @@ module AjaxDatatablesRails
           @model = model
         end
 
+        def hooks
+          @hooks ||= {
+            get_raw_records: { before: [], after: [] },
+            data: { before: [], before_each: [], after_each: [], after: [] }
+          }
+        end
+
+        def add_hook(name, about, action)
+          raise 'invalid action' unless action.is_a?(Symbol) || action.respond_to?(:call)
+
+          section = hooks.dig name.to_sym, about
+          return if section.any?(action)
+
+          section.push action
+        end
+
         def model_query
           @model_query ||= { joins: [], includes: [], references: [], selects: [] }
         end
@@ -115,6 +131,7 @@ module AjaxDatatablesRails
                :dom_id,
                :build_record_entry,
                :model_query,
+               :hooks,
                to: :class
 
       def js_searches
@@ -127,15 +144,25 @@ module AjaxDatatablesRails
 
       def get_raw_records
         scope = base_scope
+        scope = run_hooks :get_raw_records, :before, scope
+
         changed = false
         changed, scope = update_scope_joins(changed, scope)
         changed, scope = update_scope_selects(changed, scope)
         scope.distinct if changed
-        scope
+
+        run_hooks :get_raw_records, :after, scope
       end
 
       def data
-        records.map { |row| build_record_entry row }
+        rows = records
+        rows = run_hooks :data, :before, rows
+        rows = rows.map do |row|
+          row = run_hooks :data, :before_each, row
+          row = build_record_entry row
+          run_hooks :data, :after_each, row
+        end
+        run_hooks :data, :after, rows
       end
 
       private
@@ -161,6 +188,21 @@ module AjaxDatatablesRails
           changed = true
         end
         [changed, scope]
+      end
+
+      def run_hooks(name, about, results)
+        actions = hooks.dig name, about
+        return results unless actions.present?
+
+        actions.each do |action|
+          results = if action.is_a?(Symbol)
+                      send action, results
+                    else
+                      action.call results
+                    end
+        end
+
+        results
       end
     end
   end

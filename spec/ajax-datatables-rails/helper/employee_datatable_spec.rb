@@ -7,7 +7,7 @@ class EmployeeDatatable < AjaxDatatablesRails::ActiveRecord
 
   module AddressesCountDisplayMixin
     def self.call(row)
-      row.addresses.map(&:description).sort.join(' ')
+      row.addresses.map(&:description).sort.reverse.join('|')
     end
   end
 
@@ -38,6 +38,22 @@ class EmployeeDatatable < AjaxDatatablesRails::ActiveRecord
 
   def base_scope
     super.where('age < ?', 80)
+  end
+
+  add_hook :data, :after_each, :split_address
+
+  def split_address(row)
+    row[:addresses_count] = row[:addresses_count].split('|')
+    row
+  end
+
+  add_hook :data, :after, :sort_data_addresses
+
+  def sort_data_addresses(rows)
+    rows.map do |row|
+      row[:addresses_count] = row[:addresses_count].join(',')
+      row
+    end
   end
 end
 
@@ -405,7 +421,34 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
       context 'basic' do
         let!(:items) { second_employees }
         let(:params) { build_params sort_col: 'id', start: 1, length: 2 }
-        let(:exp_result) { build_exp_items 1, 2 }
+        let(:exp_result) do
+          [
+            { DT_RowId: emp4.id,
+              id: emp4.id,
+              username: 'emp4',
+              full_name: 'Employee Cuatro',
+              status: 'inactive',
+              age: 23,
+              hired_at: date2,
+              created_at: date2,
+              comment: 'emp04',
+              company_name: 'Second Company',
+              company_category: 'sandals',
+              addresses_count: 'office,main' },
+            { DT_RowId: emp5.id,
+              id: emp5.id,
+              username: 'emp5',
+              full_name: 'Employee Cinco',
+              status: 'active',
+              age: 45,
+              hired_at: date2,
+              created_at: date2,
+              comment: 'emp05',
+              company_name: 'First Company',
+              company_category: 'shoes',
+              addresses_count: 'office,main' }
+          ]
+        end
 
         it('result') { expect(subject.data).to eq exp_result }
       end
@@ -425,7 +468,7 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
           comment: row.comment,
           company_name: cmp1.name,
           company_category: cmp1.category,
-          addresses_count: 'main office',
+          addresses_count: 'office|main',
           DT_RowId: row.id
         }
       end
