@@ -3,16 +3,20 @@
 module AjaxDatatablesRails
   module Helper
     class RowDecorator
-      def self.columns(value = :none)
-        @columns = value unless value == :none
-        @columns || []
+      class << self
+        def datatable(value = :none)
+          @datatable = value unless value == :none
+          @datatable || []
+        end
+
+        delegate :columns, to: :datatable
       end
 
       def initialize(instance)
         @instance = instance
       end
 
-      delegate :columns, to: :class
+      delegate :datatable, :columns, to: :class
 
       def to_hash
         { DT_RowId: @instance.id }.tap do |hash|

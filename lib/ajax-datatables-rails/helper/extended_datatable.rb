@@ -22,13 +22,30 @@ module AjaxDatatablesRails
           }
         end
 
-        def add_hook(name, about, action)
+        def add_hook(name, about, action = nil, &blk)
+          action = blk if blk
           raise 'invalid action' unless action.is_a?(Symbol) || action.respond_to?(:call)
 
           section = hooks.dig name.to_sym, about
-          return if section.any?(action)
+          return if section.any? { |x| x.to_s == action.to_s }
 
           section.push action
+        end
+
+        def before(name, action = nil, &blk)
+          add_hook name, :before, action, &blk
+        end
+
+        def before_each(name, action = nil, &blk)
+          add_hook name, :before_each, action, &blk
+        end
+
+        def after_each(name, action = nil, &blk)
+          add_hook name, :after_each, action, &blk
+        end
+
+        def after(name, action = nil, &blk)
+          add_hook name, :after, action, &blk
         end
 
         def model_query
@@ -44,8 +61,8 @@ module AjaxDatatablesRails
 
         def decorator(value = :none)
           @decorator = value.tap { |x| x.columns columns } unless value == :none
-          @decorator ||= Class.new(::AjaxDatatablesRails::Helper::RowDecorator).tap do |x|
-            x.columns columns
+          @decorator ||= Class.new(::AjaxDatatablesRails::Helper::RowDecorator).tap do |decorator_class|
+            decorator_class.datatable self
           end
         end
 
@@ -195,11 +212,11 @@ module AjaxDatatablesRails
         return results unless actions.present?
 
         actions.each do |action|
-          results = if action.is_a?(Symbol)
-                      send action, results
-                    else
-                      action.call results
-                    end
+          if action.is_a?(Symbol)
+            send action, results
+          else
+            action.call results
+          end
         end
 
         results

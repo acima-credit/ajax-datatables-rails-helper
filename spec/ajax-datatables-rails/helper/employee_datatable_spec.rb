@@ -40,19 +40,17 @@ class EmployeeDatatable < AjaxDatatablesRails::ActiveRecord
     super.where('age < ?', 80)
   end
 
-  add_hook :data, :after_each, :split_address
+  after_each :data, :split_address
+  after_each(:data) { |row| row[:addresses_count] = row[:addresses_count].map(&:capitalize) }
+  after :data, :sort_data_addresses
 
   def split_address(row)
     row[:addresses_count] = row[:addresses_count].split('|')
-    row
   end
-
-  add_hook :data, :after, :sort_data_addresses
 
   def sort_data_addresses(rows)
     rows.map do |row|
-      row[:addresses_count] = row[:addresses_count].join(',')
-      row
+      row[:addresses_count] = row[:addresses_count].join(', ')
     end
   end
 end
@@ -434,7 +432,7 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
               comment: 'emp04',
               company_name: 'Second Company',
               company_category: 'sandals',
-              addresses_count: 'office,main' },
+              addresses_count: 'Office4, Main4' },
             { DT_RowId: emp5.id,
               id: emp5.id,
               username: 'emp5',
@@ -446,10 +444,11 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
               comment: 'emp05',
               company_name: 'First Company',
               company_category: 'shoes',
-              addresses_count: 'office,main' }
+              addresses_count: 'Office5, Main5' }
           ]
         end
 
+        it('result') { expect(subject.data).to eq exp_result }
         it('result') { expect(subject.data).to eq exp_result }
       end
     end
@@ -468,7 +467,7 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
           comment: row.comment,
           company_name: cmp1.name,
           company_category: cmp1.category,
-          addresses_count: 'office|main',
+          addresses_count: 'office1|main1',
           DT_RowId: row.id
         }
       end

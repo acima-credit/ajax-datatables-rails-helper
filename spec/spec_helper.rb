@@ -143,16 +143,16 @@ module DatatablesHelpers
   let!(:emp5) { create :employee, 'emp5', 'Employee Cinco', 'active', 45, date2, date2, cmp1, 'emp05' }
   let!(:emp6) { create :employee, 'emp6', 'Employee Seis', 'active', 85, date2, date2, cmp1, 'emp06' }
 
-  let!(:emp1_addr1) { create :employee_address, emp1.id, 'main', '123 E 456 N', 'Salt Lake', 'UT', '84001' }
-  let!(:emp1_addr2) { create :employee_address, emp1.id, 'office', '321 N 654 W', 'Salt Lake', 'UT', '84001' }
-  let!(:emp2_addr1) { create :employee_address, emp2.id, 'main', '223 E 456 N', 'Salt Lake', 'UT', '84002' }
-  let!(:emp2_addr2) { create :employee_address, emp2.id, 'office', '221 N 654 W', 'Salt Lake', 'UT', '84002' }
-  let!(:emp3_addr1) { create :employee_address, emp3.id, 'main', '323 E 456 N', 'Salt Lake', 'UT', '84003' }
-  let!(:emp3_addr2) { create :employee_address, emp3.id, 'office', '321 N 654 W', 'Salt Lake', 'UT', '84003' }
-  let!(:emp4_addr1) { create :employee_address, emp4.id, 'main', '423 E 456 N', 'Salt Lake', 'UT', '84004' }
-  let!(:emp4_addr2) { create :employee_address, emp4.id, 'office', '421 N 654 W', 'Salt Lake', 'UT', '84004' }
-  let!(:emp5_addr1) { create :employee_address, emp5.id, 'main', '523 E 456 N', 'Salt Lake', 'UT', '84005' }
-  let!(:emp5_addr2) { create :employee_address, emp5.id, 'office', '521 N 654 W', 'Salt Lake', 'UT', '84005' }
+  let!(:emp1_addr1) { create :employee_address, emp1.id, 'main1', '123 E 456 N', 'Salt Lake', 'UT', '84001' }
+  let!(:emp1_addr2) { create :employee_address, emp1.id, 'office1', '321 N 654 W', 'Salt Lake', 'UT', '84001' }
+  let!(:emp2_addr1) { create :employee_address, emp2.id, 'main2', '223 E 456 N', 'Salt Lake', 'UT', '84002' }
+  let!(:emp2_addr2) { create :employee_address, emp2.id, 'office2', '221 N 654 W', 'Salt Lake', 'UT', '84002' }
+  let!(:emp3_addr1) { create :employee_address, emp3.id, 'main3', '323 E 456 N', 'Salt Lake', 'UT', '84003' }
+  let!(:emp3_addr2) { create :employee_address, emp3.id, 'office3', '321 N 654 W', 'Salt Lake', 'UT', '84003' }
+  let!(:emp4_addr1) { create :employee_address, emp4.id, 'main4', '423 E 456 N', 'Salt Lake', 'UT', '84004' }
+  let!(:emp4_addr2) { create :employee_address, emp4.id, 'office4', '421 N 654 W', 'Salt Lake', 'UT', '84004' }
+  let!(:emp5_addr1) { create :employee_address, emp5.id, 'main5', '523 E 456 N', 'Salt Lake', 'UT', '84005' }
+  let!(:emp5_addr2) { create :employee_address, emp5.id, 'office5', '521 N 654 W', 'Salt Lake', 'UT', '84005' }
 
   let(:first_employees) { [emp1, emp2] }
   let(:second_employees) { [emp3, emp4, emp5, emp6] }
