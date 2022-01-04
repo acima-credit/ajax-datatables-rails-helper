@@ -87,7 +87,7 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
           company_category: { field: 'company.category', title: 'Category', source: 'Company.category', relation: 'company',
                               orderable: false, searchable: false, search: nil, display: :none },
           addresses_count: {
-            field: nil, title: 'Addresses', source: nil, build: described_class::AddressesCountDisplayMixin, default: nil,
+            field: 'addresses_count', title: 'Addresses', source: nil, build: described_class::AddressesCountDisplayMixin, default: nil,
             orderable: false, searchable: false, search: nil, display: { align: :center }
           },
           actions: { field: nil, title: 'Actions', source: nil,
@@ -139,7 +139,7 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
           { title: 'Hired', orderable: true, searchable: false, data: 'hired_at' },
           { title: 'Created', orderable: true, searchable: true, data: 'created_at', render: js('DTUtils.displayTimestamp') },
           { title: 'Company', orderable: false, searchable: false, data: 'company_name' },
-          { title: 'Addresses', orderable: false, searchable: false, data: nil, className: 'text-center' },
+          { title: 'Addresses', orderable: false, searchable: false, data: 'addresses_count', className: 'text-center' },
           { title: 'Actions', orderable: false, searchable: false, data: nil }
         ]
       end
@@ -201,7 +201,7 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
               "title": "Addresses",
               "orderable": false,
               "searchable": false,
-              "data": null,
+              "data": "addresses_count",
               "className": "text-center"
             },
             {
@@ -229,7 +229,7 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
           { field: 'hired_at', title: 'Hired', type: 'none' },
           { field: 'created_at', title: 'Created', type: 'date_range', delimiter: '|', values: %w[today yesterday this_week last_week] },
           { field: 'company_name', title: 'Company', type: 'none' },
-          { field: nil, title: 'Addresses', type: 'none' },
+          { field: 'addresses_count', title: 'Addresses', type: 'none' },
           { field: nil, title: 'Actions', type: 'none' }
         ]
       end
@@ -248,7 +248,7 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
             { field: 'hired_at', title: 'Hired', type: 'none' },
             { field: 'created_at', title: 'Created', type: 'date_range', delimiter: '|', value: 'yesterday', values: %w[today yesterday this_week last_week] },
             { field: 'company_name', title: 'Company', type: 'none' },
-            { field: nil, title: 'Addresses', type: 'none' },
+            { field: 'addresses_count', title: 'Addresses', type: 'none' },
             { field: nil, title: 'Actions', type: 'none' }
           ]
         end

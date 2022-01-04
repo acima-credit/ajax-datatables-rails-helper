@@ -158,7 +158,6 @@ module AjaxDatatablesRails
 
       def initialize(name, model, *args, **custom_options)
         super
-        @field = nil
         @source = nil
         @build = custom_options[:build]
         @default = custom_options[:default]
