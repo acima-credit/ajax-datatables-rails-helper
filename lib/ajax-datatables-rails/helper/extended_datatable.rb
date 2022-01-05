@@ -182,6 +182,16 @@ module AjaxDatatablesRails
         run_hooks :data, :after, rows
       end
 
+      def additional_data
+        @additional_data ||= super.yield_self do |data|
+          data[:extras] = extras unless extras.blank?
+        end
+      end
+
+      def extras
+        @extras ||= {}
+      end
+
       private
 
       def filtered_params(params)

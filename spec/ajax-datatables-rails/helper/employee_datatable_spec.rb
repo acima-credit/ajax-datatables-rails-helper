@@ -43,6 +43,7 @@ class EmployeeDatatable < AjaxDatatablesRails::ActiveRecord
   after_each :data, :split_address
   after_each(:data) { |row| row[:addresses_count] = row[:addresses_count].map(&:capitalize) }
   after :data, :sort_data_addresses
+  after :data, :add_extras
 
   def split_address(row)
     row[:addresses_count] = row[:addresses_count].split('|')
@@ -52,6 +53,10 @@ class EmployeeDatatable < AjaxDatatablesRails::ActiveRecord
     rows.map do |row|
       row[:addresses_count] = row[:addresses_count].join(', ')
     end
+  end
+
+  def add_extras(rows)
+    extras[:so_extra] = rows.size
   end
 end
 
@@ -449,7 +454,6 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
         end
 
         it('result') { expect(subject.data).to eq exp_result }
-        it('result') { expect(subject.data).to eq exp_result }
       end
     end
 
@@ -473,6 +477,51 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
       end
 
       it('result') { expect(subject.build_record_entry(row)).to eq exp_result }
+    end
+
+    describe '#as_json', :focus do
+      context 'basic' do
+        let!(:items) { second_employees }
+        let(:params) { build_params sort_col: 'id', start: 1, length: 2 }
+        let(:exp_result) do
+          {
+            recordsTotal: 5,
+            recordsFiltered: 3,
+            so_extra: 2,
+            data: [
+              { DT_RowId: emp4.id.to_s,
+                id: emp4.id.to_s,
+                username: 'emp4',
+                full_name: 'Employee Cuatro',
+                status: 'inactive',
+                age: '23',
+                hired_at: '2020-03-15 17:15:00 UTC',
+                created_at: '2020-03-15 17:15:00 UTC',
+                comment: 'emp04',
+                company_name: 'Second Company',
+                company_category: 'sandals',
+                addresses_count: 'Office4, Main4' },
+              { DT_RowId: emp5.id.to_s,
+                id: emp5.id.to_s,
+                username: 'emp5',
+                full_name: 'Employee Cinco',
+                status: 'active',
+                age: '45',
+                hired_at: '2020-03-15 17:15:00 UTC',
+                created_at: '2020-03-15 17:15:00 UTC',
+                comment: 'emp05',
+                company_name: 'First Company',
+                company_category: 'shoes',
+                addresses_count: 'Office5, Main5' }
+            ]
+          }
+        end
+
+        it('result') {
+          puts subject.as_json.inspect
+          expect(subject.as_json).to eq exp_result
+        }
+      end
     end
 
     describe '#dom_id' do
