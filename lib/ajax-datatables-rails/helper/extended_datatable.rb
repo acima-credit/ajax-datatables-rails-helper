@@ -183,9 +183,11 @@ module AjaxDatatablesRails
       end
 
       def additional_data
-        @additional_data ||= super.yield_self do |data|
-          data[:extras] = extras unless extras.blank?
-        end
+        return @additional_data if @additional_data
+
+        @additional_data = super
+        @additional_data[:extras] = extras unless extras.blank?
+        @additional_data
       end
 
       def extras

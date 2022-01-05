@@ -479,7 +479,7 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
       it('result') { expect(subject.build_record_entry(row)).to eq exp_result }
     end
 
-    describe '#as_json', :focus do
+    describe '#as_json' do
       context 'basic' do
         let!(:items) { second_employees }
         let(:params) { build_params sort_col: 'id', start: 1, length: 2 }
@@ -487,7 +487,9 @@ RSpec.describe EmployeeDatatable, :middle_time, type: :datatable do
           {
             recordsTotal: 5,
             recordsFiltered: 3,
-            so_extra: 2,
+            extras: {
+              so_extra: 2
+            },
             data: [
               { DT_RowId: emp4.id.to_s,
                 id: emp4.id.to_s,
